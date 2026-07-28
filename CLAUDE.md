@@ -34,12 +34,14 @@ Everything editable is in one `<script>` block at the top of `index.html`, fence
 
 ```js
 const START = [2026, 8, 2];   // the Sunday, 1-indexed month
-const NIGHTS = [ { meal, who, note }, ... ];  // exactly 6, Sunday→Friday
+const NIGHTS = [ { meal, who, side1, side2, note }, ... ];  // exactly 6, Sunday→Friday
 ```
 
-`note` may be an empty string and will be omitted from the render. `NIGHTS` must stay at length 6; the day labels and the "of 6" counter assume it.
+`side1`, `side2` and `note` may each be an empty string and will be omitted from the render — a night with one side renders one, a night with none drops the line. `NIGHTS` must stay at length 6; the day labels and the "of 6" counter assume it.
 
-Placeholder values are in the file now. Sibling names are bracketed (`[Sibling 1]`) and meals are guesses. Real values pending from the owner.
+Sides render as `side1 · side2` directly under the meal name, in both the hero and the week list. The separator dot is `--lake` so `--lantern` stays reserved for tonight, the cook name and the eyebrow.
+
+Meals and sides are real. Sibling names are still bracketed (`[Sibling 1]`) and `START` is still a guess — both pending from the owner.
 
 ## Design
 
@@ -69,5 +71,5 @@ The one signature element is the hero: lantern-glow radial behind an oversized m
 ## Open items
 
 - Real trip dates — `START` is currently a placeholder guess
-- Sibling household names
-- Actual meal assignments for all six nights
+- Sibling household names — `who` is still bracketed on three nights
+- Sides are recommendations, not confirmed with whoever's cooking

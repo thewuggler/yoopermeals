@@ -15,7 +15,9 @@ scroll. Commit, and the page updates in a minute or so.
 const START = [2026, 8, 2];   // the Sunday the trip starts — month is 1-12
 
 const NIGHTS = [
-  { meal: "Pasties", who: "Mom", note: "Rutabaga in half of them." },
+  { meal: "Ribs", who: "Mom",
+    side1: "Coleslaw", side2: "Baked beans",
+    note: "They go on early afternoon." },
   ...
 ];
 ```
@@ -23,7 +25,7 @@ const NIGHTS = [
 Three things worth knowing:
 
 - `NIGHTS` has to stay at six entries, Sunday first.
-- `note` can be `""` — it just won't show up.
+- `side1`, `side2` and `note` can each be `""` — they just won't show up.
 - The page works out what day it is from the phone that's reading it. Nothing to
   switch over each morning.
 
