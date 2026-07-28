@@ -65,6 +65,7 @@ The one signature element is the hero: lantern-glow radial behind an oversized m
 - Preserve the reduced-motion block and visible focus states.
 - Keep the config block at the top and clearly fenced — a non-developer edits it from the GitHub web UI on a phone.
 - Don't reach for a date library. The current local-midnight arithmetic is correct and dependency-free.
+- Open pull requests ready for review, never as drafts.
 
 ## Open items
 
