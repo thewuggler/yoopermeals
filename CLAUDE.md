@@ -41,7 +41,9 @@ const NIGHTS = [ { meal, who, side1, side2, note }, ... ];  // exactly 6, Sunday
 
 Sides render as `side1 · side2` directly under the meal name, in both the hero and the week list. The separator dot is `--lake` so `--lantern` stays reserved for tonight, the cook name and the eyebrow.
 
-Meals and sides are real. Sibling names are still bracketed (`[Sibling 1]`) and `START` is still a guess — both pending from the owner.
+`who` is the exception to the empty-string rule: left as `""` it renders **Up for grabs** rather than disappearing, so an unclaimed night looks unclaimed. It's muted in the hero and italic in the week list — it isn't a name, so it isn't styled like one. Fill in a name and it goes back to normal.
+
+Meals and sides are real, and two nights have cooks. `START` is still a guess, pending from the owner.
 
 ## Design
 
@@ -72,5 +74,5 @@ The one signature element is the hero: lantern-glow radial behind an oversized m
 ## Open items
 
 - Real trip dates — `START` is currently a placeholder guess
-- Sibling household names — `who` is still bracketed on three nights
+- Cooks for four of the six nights — Tuesday through Friday are "Up for grabs"
 - Sides are recommendations, not confirmed with whoever's cooking

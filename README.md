@@ -17,7 +17,7 @@ const START = [2026, 8, 2];   // the Sunday the trip starts — month is 1-12
 const NIGHTS = [
   { meal: "Ribs", who: "Mom",
     side1: "Coleslaw", side2: "Baked beans",
-    note: "They go on early afternoon." },
+    note: "" },
   ...
 ];
 ```
@@ -26,6 +26,7 @@ Three things worth knowing:
 
 - `NIGHTS` has to stay at six entries, Sunday first.
 - `side1`, `side2` and `note` can each be `""` — they just won't show up.
+- Leave `who` as `""` and that night shows as "Up for grabs".
 - The page works out what day it is from the phone that's reading it. Nothing to
   switch over each morning.
 
