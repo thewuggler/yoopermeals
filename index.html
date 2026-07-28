@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yooper Meals — what's for dinner?</title>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   EDIT HERE.  This is the only part of the file you need to touch.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* The Sunday the trip starts.  [ year, month, day ] — month is 1–12,
+   so August is 8.  Everything else on the page counts from this date. */
+const START = [2026, 8, 2];
+
+/* Six dinners, Sunday through Friday, in order.  Keep it at six.
+   note can be left as "" and it just won't show up. */
+const NIGHTS = [
+  { meal: "Pasties",            who: "[Sibling 1]",  note: "Rutabaga in half of them, none in the other half." },
+  { meal: "Lake Trout",         who: "Mom",          note: "" },
+  { meal: "Sloppy Joes",        who: "[Sibling 2]",  note: "Easy night — beach day, nobody wants to cook." },
+  { meal: "Chicken & Rice",     who: "[Sibling 3]",  note: "" },
+  { meal: "Burgers & Brats",    who: "Dad",          note: "Grill out back if it's not raining." },
+  { meal: "Fish Fry",           who: "Everyone",     note: "Last night. Leftovers get eaten or they go home with you." }
+];
+
+/* ══════════════════════════════════════════════════════════════════
+   END OF THE EDITABLE PART.  Below here is layout and code.
+   ══════════════════════════════════════════════════════════════════ */
+</script>
+
+<meta name="description" content="Six dinners, Sunday through Friday. Whoever's cooking, whatever we're eating.">
+<meta name="theme-color" content="#0F2E28">
+<meta property="og:title" content="Yooper Meals">
+<meta property="og:description" content="What's for dinner tonight.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Ultra&display=swap" rel="stylesheet">
+
+<style>
+/* ---- palette ------------------------------------------------------ */
+:root {
+  --pine:      #0F2E28;   /* page ground        */
+  --pine-mid:  #123630;   /* far treeline       */
+  --pine-lift: #16403A;   /* the week section   */
+  --birch:     #EDE4D3;   /* primary text       */
+  --lantern:   #F2A93B;   /* accent             */
+  --lake:      #3C8079;   /* numbers, counter   */
+  --ash:       #7E8F89;   /* secondary text     */
+
+  --edge: clamp(1.25rem, 5vw, 2.5rem);
+  --measure: 34rem;
+}
+
+/* ---- reset -------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body, h1, h2, p, ol, li, figure { margin: 0; padding: 0; }
+ol { list-style: none; }
+
+body {
+  background: var(--pine);
+  color: var(--birch);
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+:focus-visible {
+  outline: 2px solid var(--lantern);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+/* ---- masthead ----------------------------------------------------- */
+.masthead {
+  padding: 1.5rem var(--edge) 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+.wordmark {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--lantern);
+}
+.masthead .stamp {
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+
+/* ---- hero --------------------------------------------------------- */
+.hero {
+  position: relative;
+  padding: clamp(2.5rem, 11vw, 4.5rem) 0 0;
+  isolation: isolate;
+  overflow: hidden;   /* keeps the glow from widening the page */
+}
+
+/* lantern glow */
+.hero .glow {
+  position: absolute;
+  inset: -6% -20% 12%;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(58% 52% at 50% 40%,
+              rgba(242,169,59,.24) 0%,
+              rgba(242,169,59,.09) 42%,
+              rgba(242,169,59,0) 72%);
+  animation: breathe 9s ease-in-out infinite;
+}
+
+/* painted-plank seams, very faint */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 20%;
+  z-index: -1;
+  pointer-events: none;
+  background: repeating-linear-gradient(90deg,
+              rgba(237,228,211,.03) 0 1px, transparent 1px 86px);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 28%, #000 72%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 28%, #000 72%, transparent);
+}
+
+.hero-inner {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 0 var(--edge) clamp(2rem, 7vw, 3rem);
+  text-align: center;
+  animation: rise .7s cubic-bezier(.2,.7,.3,1) both;
+}
+
+.eyebrow {
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--lantern);
+  margin-bottom: clamp(.9rem, 3vw, 1.25rem);
+}
+
+.meal {
+  font-family: Ultra, Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(2.9rem, 13.5vw, 5.5rem);
+  line-height: .95;
+  letter-spacing: -.005em;
+  text-wrap: balance;
+  color: var(--birch);
+  text-shadow: 0 2px 0 rgba(15,46,40,.55);
+}
+
+.who {
+  margin-top: clamp(1rem, 4vw, 1.5rem);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--lantern);
+}
+
+.note {
+  margin: .7rem auto 0;
+  max-width: 26rem;
+  font-size: .95rem;
+  color: var(--ash);
+  text-wrap: pretty;
+}
+
+.counter {
+  margin-top: clamp(1.5rem, 6vw, 2.25rem);
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--lake);
+}
+
+/* ---- treeline ----------------------------------------------------- */
+/* Height is set rather than left to the aspect ratio so the trees stay a
+   decent size on a phone; the slight horizontal give on wide screens is
+   invisible on shapes this stylised. */
+.treeline {
+  display: block;
+  width: 100%;
+  height: clamp(84px, 13vw, 150px);
+  margin-bottom: -1px;   /* no hairline between svg and section below */
+}
+
+/* ---- the week ----------------------------------------------------- */
+.week {
+  background: var(--pine-lift);
+  padding: clamp(1.75rem, 7vw, 3rem) var(--edge) clamp(2.5rem, 9vw, 4rem);
+}
+.week-inner { max-width: var(--measure); margin: 0 auto; }
+
+.section-label {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin-bottom: 1.25rem;
+}
+
+.night {
+  display: grid;
+  grid-template-columns: 2.35rem 1fr;
+  gap: 0 .5rem;
+  padding: 1.05rem 0;
+  border-top: 1px solid rgba(237,228,211,.09);
+}
+.night:first-child { border-top: 0; padding-top: .25rem; }
+
+.night .n {
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--lake);
+  padding-top: .2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.night .day {
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+.night .night-meal {
+  font-size: 1.22rem;
+  font-weight: 500;
+  line-height: 1.25;
+  margin-top: .12rem;
+  text-wrap: balance;
+}
+.night .night-who {
+  font-size: .92rem;
+  color: var(--ash);
+  margin-top: .1rem;
+}
+.night .night-note {
+  font-size: .88rem;
+  color: var(--ash);
+  opacity: .82;
+  margin-top: .35rem;
+  text-wrap: pretty;
+}
+
+/* past nights recede */
+.night.is-past { opacity: .38; }
+
+/* tonight */
+.night.is-tonight .n,
+.night.is-tonight .night-meal { color: var(--lantern); }
+.night.is-tonight .night-meal { font-weight: 700; }
+.night.is-tonight .night-who { color: var(--birch); }
+
+/* ---- footer ------------------------------------------------------- */
+.footer {
+  padding: clamp(1.75rem, 7vw, 2.5rem) var(--edge) 3rem;
+  text-align: center;
+}
+.footer p {
+  max-width: var(--measure);
+  margin: 0 auto;
+  font-size: .78rem;
+  line-height: 1.6;
+  color: var(--ash);
+  opacity: .75;
+}
+
+noscript .fallback {
+  display: block;
+  padding: 3rem var(--edge);
+  text-align: center;
+  color: var(--ash);
+}
+
+/* ---- motion ------------------------------------------------------- */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes breathe {
+  0%, 100% { opacity: .82; }
+  50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- wider screens (afterthought, on purpose) --------------------- */
+@media (min-width: 46rem) {
+  .night { grid-template-columns: 3rem 1fr; padding: 1.25rem 0; }
+  .night .night-meal { font-size: 1.35rem; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="masthead">
+  <span class="wordmark">Yooper Meals</span>
+  <span class="stamp" id="stamp"></span>
+</header>
+
+<main>
+  <noscript>
+    <p class="fallback">This page needs JavaScript to work out what day it is.</p>
+  </noscript>
+
+  <section class="hero" aria-labelledby="meal">
+    <div class="glow" aria-hidden="true"></div>
+
+    <div class="hero-inner">
+      <p class="eyebrow" id="eyebrow"></p>
+      <h1 class="meal" id="meal"></h1>
+      <p class="who" id="who" hidden></p>
+      <p class="note" id="note" hidden></p>
+      <p class="counter" id="counter" hidden></p>
+    </div>
+
+    <!-- hand-cut treeline: far layer, then near layer -->
+    <svg class="treeline" viewBox="0 0 760 124" role="img" aria-label="A treeline of pines" focusable="false" preserveAspectRatio="none">
+      <path fill="#123630" d="M-4.7,112L-19.9,108.7L-11.5,104.9L-13.7,98.6L-7.7,94.3L-8.4,87.6L-4.8,83.9L-1.9,77.3L0.5,83.9L4.2,87.6L3.5,94.3L9.5,98.6L7.3,104.9L15.6,108.7L0.5,112ZM19.1,112L1.4,108.1L11.1,102.7L7.4,91.8L15,87.9L13.4,80.7L18.6,74.3L24.2,66.1L25.5,74.3L30.6,80.7L29.1,87.9L36.7,91.8L33,102.7L42.7,108.1L25,112ZM41.9,112L26,106.6L34.9,102.1L30.5,94.7L38.3,88.7L38.2,79.7L41,76.3L44.4,66.5L47.7,76.3L50.5,79.7L50.4,88.7L58.2,94.7L53.8,102.1L62.7,106.6L46.8,112ZM65.1,112L47.5,108.1L56.9,103.9L55.1,95.2L60.8,92.2L61.8,83.2L64.9,79.8L69.4,71.9L73.1,79.8L76.2,83.2L77.2,92.2L82.9,95.2L81.1,103.9L90.5,108.1L72.9,112ZM87.9,112L72.5,106.8L81.6,103.4L78.5,96.5L85.2,92.6L85.2,85.6L88.7,82.1L90,74.2L93.9,82.1L97.5,85.6L97.4,92.6L104.1,96.5L101.1,103.4L110.1,106.8L94.7,112ZM107.4,112L94.5,108.1L100.9,104.5L99.8,98L104.8,94.7L104.5,88.3L106.6,84.6L110,78.9L112.9,84.6L115,88.3L114.7,94.7L119.7,98L118.6,104.5L125,108.1L112.1,112ZM127.9,112L111.9,107L121,104.6L118.2,97L125,93.9L124.2,86.5L127.4,83L131.4,76.5L134.5,83L137.7,86.5L137,93.9L143.8,97L140.9,104.6L150,107L134.1,112ZM150.8,112L135.2,107.5L142.3,105.4L140.9,98.5L145.8,93.9L145.6,89.6L151.1,86.5L154.8,78.9L156.4,86.5L161.9,89.6L161.7,93.9L166.6,98.5L165.2,105.4L172.3,107.5L156.7,112ZM169.7,112L156.4,108.3L163.5,103.5L162.1,94.6L165.9,90L165.6,82.4L168.8,79L172.8,69.6L174,79L177.2,82.4L176.8,90L180.6,94.6L179.2,103.5L186.4,108.3L173.1,112ZM186.2,112L173.6,108.7L180.4,106.4L177.8,101.2L183.8,97.1L183.9,93L186.6,89.3L187.3,83.8L191,89.3L193.7,93L193.7,97.1L199.8,101.2L197.2,106.4L204,108.7L191.3,112ZM203.8,112L191.7,107.7L198.1,103.5L196,93.9L200.2,89.3L200.4,82.8L203.4,77.6L205.3,70.2L208.1,77.6L211.1,82.8L211.2,89.3L215.5,93.9L213.4,103.5L219.7,107.7L207.7,112ZM222.1,112L208.9,108.1L216.2,105.4L212.4,99.4L218.4,96.2L218.9,92L221.8,88.7L223.5,81.9L226.7,88.7L229.6,92L230.1,96.2L236.1,99.4L232.3,105.4L239.6,108.1L226.4,112ZM244.8,112L228.4,107.6L236.6,102.7L234.3,95.2L239.5,89.7L240.2,84.8L244.5,80.2L249.8,71.3L251.7,80.2L256,84.8L256.6,89.7L261.9,95.2L259.5,102.7L267.7,107.6L251.4,112ZM266.9,112L252.4,109L259.4,105.4L256.8,100.4L263.3,96.7L262.9,91.4L265.4,87.1L268.5,81.6L272.6,87.1L275.2,91.4L274.7,96.7L281.2,100.4L278.7,105.4L285.7,109L271.2,112ZM286.7,112L272.6,106.4L279.1,102L276.2,93.2L282.3,86.4L281.9,79L285.7,72.4L289.4,63.9L291.5,72.4L295.3,79L294.9,86.4L301,93.2L298.1,102L304.6,106.4L290.5,112ZM306.5,112L291.6,107.4L299,102.3L296.6,94.6L301.9,88.7L302.5,81.7L305.2,75.7L307.5,67.9L311.9,75.7L314.7,81.7L315.2,88.7L320.5,94.6L318.2,102.3L325.6,107.4L310.7,112ZM326.3,112L312.2,108L318.7,105.1L317.9,99.9L322.8,96.1L322.5,90.3L326.5,87.2L327.9,81.5L332.7,87.2L336.7,90.3L336.4,96.1L341.3,99.9L340.5,105.1L347,108L332.9,112ZM346.1,112L332.5,108.1L339.8,102.9L338.1,92.8L342,89.9L341.6,81.9L345.5,77.8L348.7,67.8L350.4,77.8L354.4,81.9L354,89.9L357.9,92.8L356.2,102.9L363.5,108.1L349.9,112ZM369.9,112L350.7,106.5L359.9,103.6L358.8,94.2L365.2,89.1L364.8,82.6L368.6,77.7L370.2,68L376.3,77.7L380.1,82.6L379.7,89.1L386.1,94.2L385,103.6L394.2,106.5L375,112ZM390.2,112L375.4,107.4L382.3,100.8L380.2,91.2L386.8,85.1L386.4,77L389.1,71.2L393.2,62.7L394.7,71.2L397.4,77L397,85.1L403.6,91.2L401.5,100.8L408.4,107.4L393.6,112ZM410.3,112L395.5,107.8L402.6,104L401.3,96.3L406.8,93.7L406.3,85.8L410.3,82.9L414.8,75.2L416.9,82.9L420.9,85.8L420.4,93.7L425.9,96.3L424.6,104L431.7,107.8L416.9,112ZM432.2,112L416.3,107.2L425.4,105.2L421.7,98.1L428.7,93.7L428.5,86.4L431.6,82.4L435.2,76.3L437.9,82.4L441,86.4L440.7,93.7L447.8,98.1L444.1,105.2L453.1,107.2L437.3,112ZM454.1,112L437.4,108L447.7,100.9L443.5,92.6L449.8,88.1L451.1,78.9L454.8,75.2L458.6,65.5L460.8,75.2L464.5,78.9L465.9,88.1L472.1,92.6L467.9,100.9L478.3,108L461.5,112ZM474.7,112L461.5,107.7L467.2,101.2L465.7,92.1L471.3,87.1L470.5,78.2L474.1,75L477.9,64.4L478.9,75L482.6,78.2L481.7,87.1L487.3,92.1L485.8,101.2L491.5,107.7L478.3,112ZM491.8,112L478.9,105.7L485,102.9L484.5,94.1L488.5,86.8L489,80.7L490.9,73.8L495.1,65.5L497.1,73.8L499,80.7L499.5,86.8L503.4,94.1L503,102.9L509.1,105.7L496.2,112ZM514.5,112L497.6,107.1L506.2,102.8L504.5,94.5L509.5,91L509.3,81.7L514.7,78.3L519.1,69.5L521.4,78.3L526.7,81.7L526.5,91L531.5,94.5L529.9,102.8L538.5,107.1L521.6,112ZM538.8,112L522.4,108.9L530.8,105.4L528.3,98.8L534.6,94.1L533.6,87.6L538.2,85L541.5,78.1L544.3,85L548.9,87.6L547.9,94.1L554.2,98.8L551.7,105.4L560.2,108.9L543.7,112ZM561,112L543.8,107.2L553.4,102L550,91.7L557.9,86.7L556.4,80.3L561.7,75.5L563.1,65.8L567.8,75.5L573,80.3L571.5,86.7L579.4,91.7L576.1,102L585.6,107.2L568.4,112ZM581.2,112L567.5,108.4L573.9,105.8L572.3,99.5L578,97L577.7,91.6L580.7,88.5L581.7,82.4L585.3,88.5L588.3,91.6L588,97L593.7,99.5L592.1,105.8L598.5,108.4L584.8,112ZM598.9,112L585.1,107.6L593.1,102.1L590,95.9L595.7,89.6L595.2,84.1L598.5,78.9L599.5,70.3L603.4,78.9L606.8,84.1L606.2,89.6L611.9,95.9L608.8,102.1L616.8,107.6L603,112ZM616.2,112L603.8,107.4L610.7,104.5L609.1,97.8L613.8,93.6L613.4,89.3L615.9,84.3L619.5,77.7L622.1,84.3L624.6,89.3L624.2,93.6L629,97.8L627.4,104.5L634.3,107.4L621.9,112ZM640.1,112L622,108.7L631.9,104.5L629.7,96.5L635.6,92.9L635.5,86.6L638.7,82.5L643.2,75.9L647.1,82.5L650.3,86.6L650.2,92.9L656.1,96.5L654,104.5L663.8,108.7L645.7,112ZM659.2,112L645.6,108.4L653.3,105.8L651.7,100.7L655.2,96.8L656.2,93L659.1,90.2L661.5,84L663.4,90.2L666.4,93L667.3,96.8L670.9,100.7L669.2,105.8L677,108.4L663.4,112ZM677.1,112L663.5,106.9L670.5,103.7L668.5,97.5L674,92.9L673.9,86.9L676.5,81.8L680.2,74.1L682.4,81.8L685.1,86.9L685,92.9L690.5,97.5L688.4,103.7L695.4,106.9L681.8,112ZM698.8,112L682.2,108.7L690.5,103.6L688.8,96.4L695.2,92.4L694.4,85.6L698,82.7L700,75L704.5,82.7L708,85.6L707.3,92.4L713.7,96.4L711.9,103.6L720.2,108.7L703.6,112ZM721.1,112L704.2,108.6L713.3,104L709.8,97.3L715.6,93.4L716.2,88.4L719.8,84.5L723.8,76.5L727.3,84.5L730.9,88.4L731.4,93.4L737.2,97.3L733.8,104L742.9,108.6L726,112ZM744.3,112L726.5,107.4L735.1,102.6L732.1,92.3L739.5,88L739.4,80.6L743.1,75.5L747.8,67.1L750.1,75.5L753.8,80.6L753.7,88L761.1,92.3L758.1,102.6L766.7,107.4L748.9,112ZM764.1,112L750,106.8L757,104.1L755.6,94.1L760.4,91L759.6,84.8L762.7,80L764.9,71L768.9,80L772,84.8L771.2,91L776,94.1L774.7,104.1L781.6,106.8L767.5,112ZM786.4,112L768.1,108.2L778.3,104.4L775.1,96.6L782.8,93.2L781.7,86.2L785.9,82.8L790.7,74.9L793.5,82.8L797.7,86.2L796.6,93.2L804.4,96.6L801.1,104.4L811.3,108.2L793,112ZM0,95L760,98L760,124L0,124Z"/>
+      <path fill="#16403A" d="M5.2,118L-18.7,109.5L-7.4,101.9L-11.6,84.1L-2.9,75.4L-2.6,64.7L4.2,52.6L9.5,38.8L12.1,52.6L18.9,64.7L19.1,75.4L27.8,84.1L23.7,101.9L34.9,109.5L11,118ZM48.6,118L17.7,107.8L34,101.6L29,85.4L39,76.1L39.5,63.7L46.3,54.7L52.1,41.4L60.1,54.7L66.9,63.7L67.4,76.1L77.4,85.4L72.5,101.6L88.8,107.8L57.8,118ZM94,118L66.4,111.8L79.4,102.7L76.1,86.5L88,78.3L88.9,63L94.4,57.4L97.6,41.5L104.1,57.4L109.6,63L110.5,78.3L122.4,86.5L119.1,102.7L132.1,111.8L104.5,118ZM141.7,118L111.6,113L127.9,106.3L123.3,93.6L136,85.9L134.5,77.4L142.2,71.6L144.1,59.4L153.3,71.6L161,77.4L159.6,85.9L172.3,93.6L167.7,106.3L184,113L153.9,118ZM188.9,118L162.1,111.1L175.4,107.9L171.2,96.5L182.1,90L179.5,80.1L186.1,76.4L195.1,65.2L198.9,76.4L205.5,80.1L202.8,90L213.7,96.5L209.6,107.9L222.9,111.1L196,118ZM232.6,118L204.7,108L217.4,101L215.7,90.2L224.6,78.8L226.3,70L231.3,59L234.5,46.4L242.9,59L247.9,70L249.7,78.8L258.5,90.2L256.8,101L269.5,108L241.6,118ZM274.6,118L248.4,106.9L262,101.8L257.3,82.6L269.7,77.2L269.5,59.1L274,53.2L281,35.3L284.3,53.2L288.8,59.1L288.6,77.2L301,82.6L296.3,101.8L309.9,106.9L283.7,118ZM311.3,118L289.8,112.7L300.3,104.7L298.3,93.6L307.4,87.1L305.5,76.4L311,67.8L312.9,56.5L319.4,67.8L324.8,76.4L323,87.1L332.1,93.6L330.1,104.7L340.6,112.7L319.1,118ZM348.9,118L324.9,107.1L336.5,101.4L332.1,82.8L341,72.8L342.1,60L347.2,51.2L350.1,34.3L357.4,51.2L362.5,60L363.6,72.8L372.5,82.8L368.2,101.4L379.8,107.1L355.8,118ZM389.9,118L361.6,111.2L377.1,107L371.4,93.3L384.7,88.3L382.5,78.4L390.3,70.6L394,60.4L400.9,70.6L408.7,78.4L406.5,88.3L419.8,93.3L414.1,107L429.6,111.2L401.3,118ZM433.7,118L407.5,110.4L420.5,106.9L415.7,96.4L426.7,87.6L427.8,77.3L433.2,74.1L434.3,61.4L441.3,74.1L446.8,77.3L447.8,87.6L458.9,96.4L454.1,106.9L467.1,110.4L440.9,118ZM468.7,118L449.5,112.5L458.1,106.2L456.4,96.8L462.3,89.7L464.5,81.7L467.6,75L470.2,66L476.2,75L479.4,81.7L481.6,89.7L487.4,96.8L485.8,106.2L494.4,112.5L475.2,118ZM508.1,118L479.9,111L496.5,100.9L490.2,81.6L500.5,75.6L502,60.2L508.4,47.5L514.2,32.8L517.1,47.5L523.5,60.2L525,75.6L535.4,81.6L529,100.9L545.6,111L517.4,118ZM549.7,118L523.5,106.8L538.2,101.7L535.2,83.8L543.9,77.2L543.8,61.7L549.4,54L552.1,37.7L558.7,54L564.3,61.7L564.3,77.2L573,83.8L570,101.7L584.6,106.8L558.5,118ZM596.7,118L566.4,110.9L583.1,104.8L575.1,94.1L587.7,88L588.8,77.9L593.5,72.3L600.1,61.4L608.1,72.3L612.9,77.9L614,88L626.6,94.1L618.5,104.8L635.2,110.9L605,118ZM638.8,118L613.2,111.6L626.4,105L621.4,94.1L633.2,84.5L632.1,75.1L638.3,68.8L644.9,57L647.9,68.8L654.1,75.1L653,84.5L664.8,94.1L659.8,105L673,111.6L647.4,118ZM684.3,118L653.8,112L669.5,103.9L663.1,93.2L676.6,85.8L677.5,74.6L681.2,69.5L686.7,57.3L695.2,69.5L698.9,74.6L699.8,85.8L713.2,93.2L706.8,103.9L722.6,112L692.1,118ZM719.3,118L701.5,109.7L710.8,102L707.5,88.6L715.5,77.6L714.8,63.6L718.6,57.8L722.5,42.3L726.5,57.8L730.3,63.6L729.6,77.6L737.6,88.6L734.3,102L743.6,109.7L725.9,118ZM753.2,118L731.3,110.3L743.5,104L739.8,88.4L746.5,79.2L748.1,70.5L751.4,60.6L757.3,47.1L761.8,60.6L765.1,70.5L766.7,79.2L773.3,88.4L769.7,104L781.8,110.3L759.9,118ZM789.3,118L766.5,112.2L779.3,107.2L773.6,96.9L783.1,91.4L782.8,83L788.8,78.2L795.2,68.8L798.8,78.2L804.8,83L804.5,91.4L814,96.9L808.3,107.2L821.1,112.2L798.3,118ZM0,100L760,103L760,124L0,124Z"/>
+    </svg>
+  </section>
+
+  <section class="week" aria-labelledby="week-label">
+    <div class="week-inner">
+      <h2 class="section-label" id="week-label">The week</h2>
+      <ol class="nights" id="nights"></ol>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>Six dinners, Sunday through Friday. Plans change in the group text, not here &mdash; this page just says what's set.</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var DAYS   = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var DAY_MS = 86400000;
+  var COUNT  = Math.min(NIGHTS.length, DAYS.length);
+
+  /* ---- dates ------------------------------------------------------
+     All arithmetic is on local midnights, so it lines up with whatever
+     day the phone in the kitchen thinks it is. Math.round absorbs the
+     one-hour wobble if a daylight-saving change lands mid-trip. */
+
+  function midnight(y, m, d) { return new Date(y, m, d); }
+
+  function dateOfNight(i) {
+    return midnight(START[0], START[1] - 1, START[2] + i);
+  }
+
+  function shortDate(d) {
+    return MONTHS[d.getMonth()] + " " + d.getDate();
+  }
+
+  var now     = new Date();
+  var today   = midnight(now.getFullYear(), now.getMonth(), now.getDate());
+  var firstNight = dateOfNight(0);
+  var index   = Math.round((today - firstNight) / DAY_MS);
+
+  /* ---- helpers ----------------------------------------------------- */
+
+  function fill(id, text) {
+    var node = document.getElementById(id);
+    if (!text) { node.hidden = true; return; }
+    node.textContent = text;
+    node.hidden = false;
+  }
+
+  function make(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) { node.className = className; }
+    if (text) { node.textContent = text; }
+    return node;
+  }
+
+  /* ---- the hero ----------------------------------------------------
+     Three states: before the trip, during it, after Friday. */
+
+  function renderHero() {
+    document.getElementById("stamp").textContent =
+      shortDate(dateOfNight(0)) + " – " + shortDate(dateOfNight(COUNT - 1));
+
+    // After Friday — sign-off.
+    if (index >= COUNT) {
+      fill("eyebrow", "That's the week");
+      fill("meal", "Till next time");
+      fill("who", "");
+      fill("note", "Six dinners, nobody went hungry. Text the group when you're home.");
+      fill("counter", "");
+      return;
+    }
+
+    // Before the trip — countdown, plus a look at night one.
+    if (index < 0) {
+      var out = -index;
+      fill("eyebrow", out === 1 ? "Tomorrow" : out + " days out");
+      fill("meal", NIGHTS[0].meal);
+      fill("who", NIGHTS[0].who ? "Cooked by " + NIGHTS[0].who : "");
+      fill("note", NIGHTS[0].note);
+      fill("counter", "First night · " + DAYS[0] + ", " + shortDate(dateOfNight(0)));
+      return;
+    }
+
+    // During the trip — tonight is the whole point of the page.
+    var tonight = NIGHTS[index];
+    fill("eyebrow", "Tonight · " + DAYS[index]);
+    fill("meal", tonight.meal);
+    fill("who", tonight.who ? "Cooked by " + tonight.who : "");
+    fill("note", tonight.note);
+    fill("counter", "Night " + (index + 1) + " of " + COUNT +
+                    " · " + shortDate(dateOfNight(index)));
+  }
+
+  /* ---- the week list ----------------------------------------------- */
+
+  function renderWeek() {
+    var list = document.getElementById("nights");
+
+    for (var i = 0; i < COUNT; i++) {
+      var night = NIGHTS[i];
+      var item  = make("li", "night");
+
+      if (i < index)       { item.className += " is-past"; }
+      else if (i === index) {
+        item.className += " is-tonight";
+        item.setAttribute("aria-current", "date");
+      }
+
+      var number = make("span", "n", String(i + 1).padStart(2, "0"));
+      number.setAttribute("aria-hidden", "true");
+      item.appendChild(number);
+
+      var body = make("div", "night-body");
+
+      var day = make("p", "day", DAYS[i] + " · " + shortDate(dateOfNight(i)));
+      if (i < index)        { day.appendChild(make("span", "sr-only", " — done")); }
+      else if (i === index) { day.appendChild(make("span", "sr-only", " — tonight")); }
+      body.appendChild(day);
+
+      body.appendChild(make("p", "night-meal", night.meal));
+      if (night.who)  { body.appendChild(make("p", "night-who", night.who)); }
+      if (night.note) { body.appendChild(make("p", "night-note", night.note)); }
+
+      item.appendChild(body);
+      list.appendChild(item);
+    }
+  }
+
+  renderHero();
+  renderWeek();
+})();
+</script>
+
+</body>
+</html>
