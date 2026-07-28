@@ -15,31 +15,32 @@
 const START = [2026, 8, 2];
 
 /* Six dinners, Sunday through Friday, in order.  Keep it at six.
+   Leave who as "" and the night shows as "Up for grabs".
    side1, side2 and note can each be left as "" and they just won't show up. */
 const NIGHTS = [
-  { meal: "Ribs",               who: "[Sibling 1]",
+  { meal: "Ribs",               who: "Mom",
     side1: "Coleslaw",          side2: "Baked beans",
-    note: "Low and slow — they go on early afternoon." },
-
-  { meal: "Meatballs & Pasta",  who: "Mom",
-    side1: "Garlic bread",      side2: "Caesar salad",
     note: "" },
 
-  { meal: "Free-for-All",       who: "[Sibling 2]",
-    side1: "Pasta salad",       side2: "Veggie tray & dip",
-    note: "Grill's on — bring whatever you feel like cooking." },
+  { meal: "Meatballs & Pasta",  who: "Jeff & Shanna",
+    side1: "Garlic bread",      side2: "Italian salad",
+    note: "" },
 
-  { meal: "Tacos",              who: "[Sibling 3]",
+  { meal: "Free-for-All",       who: "",
+    side1: "Pasta salad",       side2: "Veggie tray & dip",
+    note: "" },
+
+  { meal: "Tacos",              who: "",
     side1: "Spanish rice",      side2: "Chips & guacamole",
     note: "" },
 
-  { meal: "Grill Night",        who: "Dad",
+  { meal: "Grill Night",        who: "",
     side1: "Corn on the cob",   side2: "Potato salad",
-    note: "Out back if it's not raining." },
+    note: "" },
 
-  { meal: "Pizza",              who: "Everyone",
+  { meal: "Pizza",              who: "",
     side1: "Garden salad",      side2: "Garlic knots",
-    note: "Last night. Leftovers get eaten or they go home with you." }
+    note: "" }
 ];
 
 /* The kids' standbys — no schedule, they're around every night.
@@ -214,6 +215,11 @@ body {
   font-weight: 500;
   color: var(--lantern);
 }
+/* Nobody's claimed it yet — say so, but don't dress it up as a name. */
+.who.is-open {
+  color: var(--ash);
+  font-weight: 400;
+}
 
 .note {
   margin: .7rem auto 0;
@@ -336,6 +342,7 @@ body {
 .night.is-tonight .night-meal { color: var(--lantern); }
 .night.is-tonight .night-meal { font-weight: 700; }
 .night.is-tonight .night-sides { color: var(--birch); }
+.night .night-who.is-open { font-style: italic; }
 .night.is-tonight .night-who { color: var(--birch); }
 
 /* ---- kids list ---------------------------------------------------- */
@@ -530,6 +537,16 @@ noscript .fallback {
     return node;
   }
 
+  /* A night with no cook yet reads as "Up for grabs" rather than going
+     blank, so an unclaimed night looks unclaimed instead of looking like
+     nothing. Muted, because it isn't a name. */
+  function setWho(node, baseClass, who, prefix) {
+    node.textContent = who ? prefix + who : "Up for grabs";
+    node.className = who ? baseClass : baseClass + " is-open";
+    node.hidden = false;
+    return node;
+  }
+
   /* ---- the hero ----------------------------------------------------
      Three states: before the trip, during it, after Friday. */
 
@@ -556,7 +573,7 @@ noscript .fallback {
       fill("eyebrow", out === 1 ? "Tomorrow" : out + " days out");
       fill("meal", NIGHTS[0].meal);
       sidesInto(heroSides, NIGHTS[0]);
-      fill("who", NIGHTS[0].who ? "Cooked by " + NIGHTS[0].who : "");
+      setWho(document.getElementById("who"), "who", NIGHTS[0].who, "Cooked by ");
       fill("note", NIGHTS[0].note);
       fill("counter", "First night · " + DAYS[0] + ", " + shortDate(dateOfNight(0)));
       return;
@@ -567,7 +584,7 @@ noscript .fallback {
     fill("eyebrow", "Tonight · " + DAYS[index]);
     fill("meal", tonight.meal);
     sidesInto(heroSides, tonight);
-    fill("who", tonight.who ? "Cooked by " + tonight.who : "");
+    setWho(document.getElementById("who"), "who", tonight.who, "Cooked by ");
     fill("note", tonight.note);
     fill("counter", "Night " + (index + 1) + " of " + COUNT +
                     " · " + shortDate(dateOfNight(index)));
@@ -604,7 +621,7 @@ noscript .fallback {
       var sides = sidesInto(make("p", "night-sides"), night);
       if (!sides.hidden) { body.appendChild(sides); }
 
-      if (night.who)  { body.appendChild(make("p", "night-who", night.who)); }
+      body.appendChild(setWho(make("p"), "night-who", night.who, ""));
       if (night.note) { body.appendChild(make("p", "night-note", night.note)); }
 
       item.appendChild(body);
