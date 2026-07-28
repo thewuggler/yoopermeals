@@ -26,7 +26,9 @@ Three things worth knowing:
 
 - `NIGHTS` has to stay at six entries, Sunday first.
 - `side1`, `side2` and `note` can each be `""` — they just won't show up.
-- Leave `who` as `""` and that night shows as "Up for grabs".
+- Leave `who` as `""` and that night shows as "Up for grabs". For a night with
+  no one cook — like the free-for-all — put the phrase in `AS_IS_COOKS` just
+  below `NIGHTS` and it prints without "Cooked by" in front.
 - The page works out what day it is from the phone that's reading it. Nothing to
   switch over each morning.
 

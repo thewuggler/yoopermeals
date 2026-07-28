@@ -26,7 +26,7 @@ const NIGHTS = [
     side1: "Garlic bread",      side2: "Italian salad",
     note: "" },
 
-  { meal: "Free-for-All",       who: "",
+  { meal: "Free-for-All",       who: "Every person for themselves",
     side1: "Pasta salad",       side2: "Veggie tray & dip",
     note: "" },
 
@@ -43,13 +43,24 @@ const NIGHTS = [
     note: "" }
 ];
 
+/* Some cook lines are statements about the night rather than a person.
+   These print exactly as written, with no "Cooked by" in front. */
+const AS_IS_COOKS = [
+  "Up for grabs",
+  "Every person for themselves"
+];
+
 /* The kids' standbys — no schedule, they're around every night.
    Add or remove lines freely; there's no fixed count here. */
 const KIDS = [
   "Chicken Nuggets",
   "Mac and Cheese",
   "PB&J",
-  "Salami"
+  "Salami",
+  "Yogurt",
+  "Cheese Sticks",
+  "Fruit",
+  "Chips"
 ];
 
 /* ══════════════════════════════════════════════════════════════════
@@ -215,8 +226,9 @@ body {
   font-weight: 500;
   color: var(--lantern);
 }
-/* Nobody's claimed it yet — say so, but don't dress it up as a name. */
-.who.is-open {
+/* A statement about the night, not a person — say it, but don't dress it
+   up as a name. */
+.who.is-phrase {
   color: var(--ash);
   font-weight: 400;
 }
@@ -342,7 +354,7 @@ body {
 .night.is-tonight .night-meal { color: var(--lantern); }
 .night.is-tonight .night-meal { font-weight: 700; }
 .night.is-tonight .night-sides { color: var(--birch); }
-.night .night-who.is-open { font-style: italic; }
+.night .night-who.is-phrase { font-style: italic; }
 .night.is-tonight .night-who { color: var(--birch); }
 
 /* ---- kids list ---------------------------------------------------- */
@@ -539,10 +551,14 @@ noscript .fallback {
 
   /* A night with no cook yet reads as "Up for grabs" rather than going
      blank, so an unclaimed night looks unclaimed instead of looking like
-     nothing. Muted, because it isn't a name. */
+     nothing. Anything in AS_IS_COOKS is a statement about the night, not a
+     person, so it skips the "Cooked by" prefix and is styled as a phrase
+     rather than as a name. */
   function setWho(node, baseClass, who, prefix) {
-    node.textContent = who ? prefix + who : "Up for grabs";
-    node.className = who ? baseClass : baseClass + " is-open";
+    var text = who || "Up for grabs";
+    var asIs = AS_IS_COOKS.indexOf(text) !== -1;
+    node.textContent = asIs ? text : prefix + text;
+    node.className = asIs ? baseClass + " is-phrase" : baseClass;
     node.hidden = false;
     return node;
   }
