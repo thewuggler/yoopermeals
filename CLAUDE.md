@@ -26,7 +26,7 @@ The page reads the device's local date, computes how many days have elapsed sinc
 | During (index 0–5) | Tonight's meal as the hero |
 | After Friday | A sign-off |
 
-Below the hero, all six nights render as a list. Past nights dim to 38% opacity, tonight gets the accent color and bold weight.
+Below the hero, all six nights render as a list. Past nights dim to 38% opacity, tonight gets the accent color and bold weight. Every night shows who's at the table that night — see below; the crowd isn't the same all week.
 
 The week list sits under the first of three tabs — **The week**, **Kids menu**, **Shopping**. A night that has recipes shows them as `<details>` disclosures inside its row, closed by default so the page still answers "what's for dinner" without a tap.
 
@@ -36,9 +36,11 @@ Everything editable is in one `<script>` block at the top of `index.html`, fence
 
 ```js
 const START   = [2026, 8, 2];   // the Sunday, 1-indexed month
-const NIGHTS  = [ { meal, who, side1, side2, note, cook }, ... ];  // exactly 6, Sunday→Friday
+const NIGHTS  = [ { meal, who, adults, kids, side1, side2, note, cook }, ... ];  // exactly 6, Sunday→Friday
+const KID_APPETITE = [ { under, eats }, ... ];  // age → share of an adult portion
+const KID_EATS = 0.5;                           // when a night gives a count, not ages
 const KIDS    = [ "Chicken Nuggets", ... ];     // no schedule, any length
-const RECIPES = { key: { title, source, url, time, scale, makes, ingredients, steps } };
+const RECIPES = { key: { title, source, url, time, serves, makes, ingredients, steps } };
 const EXTRAS  = [ { qty, unit, item, group }, ... ];   // on the list, not from a recipe
 ```
 
@@ -52,22 +54,38 @@ Not every night has a person cooking, so `AS_IS_COOKS` lists the cook lines that
 
 Meals and sides are real, and two nights have cooks. `START` is still a guess, pending from the owner.
 
+## Who's at the table
+
+The crowd changes through the week, so each night carries its own `adults` and `kids`. It prints on the night — a bordered pill under the cook line in the hero, a quiet line in the week row — and it sets how far the recipes are scaled. Currently: Sunday 7 adults and 7 kids, Monday and Tuesday 9 and 7, Wednesday through Friday 7 adults and 4 kids.
+
+`kids` is either a plain count or a list of ages. Ages are better and Wednesday onward has them (`[13, 11, 7, 3.5]`), because a thirteen-year-old eats an adult dinner and a three-year-old does not. `KID_APPETITE` maps an age to the share of an adult portion it actually eats — 0.35 under 5, 0.55 under 10, 0.75 under 13, then a full share. A count with no ages uses `KID_EATS`, a flat half. Those numbers are a judgement call, not a fact; edit them if the appetites are wrong.
+
+Adding up adults plus each kid's share gives the night's **portions**, which is the only thing the scaling cares about. Sunday is 10½, Monday and Tuesday 12½, Wednesday through Friday 9.65. Head *count* and portions are deliberately different numbers: seven kids is seven place settings but nothing like seven dinners, and only one of those two facts helps you buy meat.
+
+Leave `adults` off a night and the indicator disappears and its recipes stay at their published size — no guessing.
+
 ## Recipes and the shopping list
 
 A night lists `RECIPES` keys in its `cook` array and renders those recipes; leave `cook` off and the night is just a name and two sides, as before. Monday points at `meatballs` and `marinara`, both Rao's.
 
 Ingredients are `{ qty, unit, item, prep, group }`. `qty` is a **number** — never a string like `"1½"` — because the shopping list scales it and adds it up, and only turns it back into a fraction when it prints. `prep` ("minced", "chopped") shows in the recipe and is dropped from the shopping list. `group` is the aisle: Produce, Meat, Dairy, Bakery, Pantry, in that order. Anything else — a typo like `"produce"`, or a new aisle — gets its own section after those five rather than being dropped. That's deliberate: a silently missing ingredient is the one failure this tab can't have, and an odd heading is how you notice.
 
-`scale` multiplies the whole recipe — every quantity and the yield. **Store recipes at their published amounts and change `scale`**, so the original stays checkable against the source. The party is 9 adults and 7 kids, so meatballs run at 2 (28 meatballs) and marinara at 3 (~3 quarts, since it sauces the pasta as well).
+**Store recipes at their published amounts** so the original stays checkable against the source, and say how many grown-up portions that published recipe feeds in `serves`. The batch size is then derived, per night: the portions at that night's table divided by `serves`, **rounded to the nearest half** — half a recipe is a thing you can stand at a counter and cook, 1.79 of one is not. Everything follows from it, every quantity and the yield, on the page and in the shopping list.
+
+Monday's 12½ portions against meatballs at `serves: 7` (14 meatballs, two apiece) gives 2× — 28 meatballs. Against marinara at `serves: 4` (a quart sauces four, pasta and all) it gives 3× — ~3 quarts. Those are the same amounts the page shipped with when the multipliers were hand-set, which is the check to re-run if `serves` or the head counts move.
+
+A literal `scale` on a recipe pins the batch and ignores the head count entirely. Nothing uses it now; reach for it only when a recipe genuinely isn't about how many people are eating.
+
+The recipe's meta line prints the multiplier *and* the crowd it was sized for — "2× the original · For 9 adults & 7 kids" — so the number is checkable against the night rather than taken on faith. Don't drop that.
 
 `shop` overrides what an ingredient contributes to the list:
 
 - `shop: false` keeps it off entirely — tap water is the only current case.
-- `shop: { qty, unit, item }` substitutes what you actually buy: "9 tbsp onion" is useless in a store, "1 large yellow onion" is not. **This override is taken as written and is not multiplied by `scale`** — it's the real amount for the cart, so revisit these by hand if `scale` changes.
+- `shop: { qty, unit, item }` substitutes what you actually buy: "9 tbsp onion" is useless in a store, "1 large yellow onion" is not. **This override is taken as written and is never multiplied** — it's the real amount for the cart. Since the batch size now moves on its own when a night's heads change, these are the lines to re-check by hand afterwards.
 
 Two lines merge on the list only when item *and* unit match exactly — cups are never silently added to tablespoons. That's why olive oil combines across both recipes (2 cups + ¾ cup → 2¾ cups) but the Pecorino in the meatballs stays separate from the Pecorino for the table.
 
-Below the aisles, **Still to work out** lists every night and side with no recipe behind it, plus the kids' standbys. It's generated, not hand-maintained: fill in a recipe and the night leaves that section on its own. Keep it — the gaps are the reason to open this tab before the trip.
+Below the aisles, **Still to work out** lists every night and side with no recipe behind it, plus the kids' standbys. It's generated, not hand-maintained: fill in a recipe and the night leaves that section on its own. Keep it — the gaps are the reason to open this tab before the trip. Each night there carries its head count, since with no recipe to size it that's the only quantity the line can give you.
 
 **Copy the list** writes the whole thing out as plain text for the group thread. It's an export, not storage, and it's the only button on the site that does anything.
 
@@ -102,5 +120,7 @@ The one signature element is the hero: lantern-glow radial behind an oversized m
 - Real trip dates — `START` is currently a placeholder guess
 - Cooks for three of the six nights — Wednesday, Thursday and Friday are "Up for grabs"
 - Sides are recommendations, not confirmed with whoever's cooking
+- Head counts are the plan, not an RSVP — confirm the Wednesday-onward drop from 9 adults to 7 before shopping, since the recipe amounts move with it
+- `KID_APPETITE` is a guess at how much kids eat, and only Monday's two recipes currently lean on it
 - Recipes for the other five nights, and for the sides — everything without one shows under "Still to work out" on the shopping tab
 - The shopping list has no quantities for anything outside a recipe; `EXTRAS` currently covers only the spaghetti and the table cheese
