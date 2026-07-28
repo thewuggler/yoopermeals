@@ -16,7 +16,9 @@ const START = [2026, 8, 2];
 
 /* Six dinners, Sunday through Friday, in order.  Keep it at six.
    Leave who as "" and the night shows as "Up for grabs".
-   side1, side2 and note can each be left as "" and they just won't show up. */
+   side1, side2 and note can each be left as "" and they just won't show up.
+   cook is an optional list of RECIPES keys — the night shows those recipes
+   and the shopping list adds up what they call for. */
 const NIGHTS = [
   { meal: "Ribs",               who: "Mom",
     side1: "Coleslaw",          side2: "Baked beans",
@@ -24,7 +26,8 @@ const NIGHTS = [
 
   { meal: "Meatballs & Pasta",  who: "Jeff & Shanna",
     side1: "Garlic bread",      side2: "Italian salad",
-    note: "" },
+    note: "",
+    cook: ["meatballs", "marinara"] },
 
   { meal: "Free-for-All",       who: "Every person for themselves",
     side1: "Pasta salad",       side2: "Veggie tray & dip",
@@ -61,6 +64,99 @@ const KIDS = [
   "Cheese Sticks",
   "Fruit",
   "Chips"
+];
+
+/* ── Recipes ────────────────────────────────────────────────────────
+   A night points at these by key, through its cook list.
+
+   Quantities are the recipe exactly as it was published — leave them
+   alone.  To feed more people change scale, and every quantity and the
+   yield are multiplied by it on the page and in the shopping list.
+   We are 9 adults and 7 kids, so the meatballs run double and the sauce
+   triple (the extra sauce is for the pasta).
+
+   Each ingredient is { qty, unit, item, prep, group }.
+     qty   a number, or null for "to taste" things with no amount
+     unit  "lb", "cup", "clove"…  or "" when the item carries its own
+     prep  "minced", "chopped" — shown in the recipe, not on the list
+     group the aisle it lands in on the shopping list
+
+   shop overrides what the shopping list says for that ingredient:
+     shop: false        keep it out of the list entirely (tap water)
+     shop: { … }        buy this instead — "9 tbsp onion" is useless in
+                        a store, "1 large yellow onion" is not.  What
+                        you write here is taken as-is and is NOT
+                        multiplied by scale, so it's the real amount
+                        to put in the cart. */
+const RECIPES = {
+
+  meatballs: {
+    title:  "Rao's Meatballs",
+    source: "Rao's Cookbook — Frank Pellegrino",
+    url:    "https://www.foodnetwork.com/recipes/raos-meatballs-5287055",
+    time:   "About 1 hour",
+    scale:  2,
+    makes:  { qty: 14, unit: "meatball" },
+    ingredients: [
+      { qty: 1,    unit: "lb",    item: "lean ground beef",                          group: "Meat" },
+      { qty: 0.5,  unit: "lb",    item: "ground veal",                               group: "Meat" },
+      { qty: 0.5,  unit: "lb",    item: "ground pork",                               group: "Meat" },
+      { qty: 2,    unit: "",      item: "large eggs",                                group: "Dairy" },
+      { qty: 1,    unit: "cup",   item: "Pecorino Romano", prep: "freshly grated",   group: "Dairy" },
+      { qty: 1.5,  unit: "tbsp",  item: "flat-leaf parsley", prep: "chopped",        group: "Produce",
+        shop: { qty: 1, unit: "bunch", item: "flat-leaf parsley" } },
+      { qty: 1,    unit: "clove", item: "garlic", prep: "minced",                    group: "Produce" },
+      { qty: 2,    unit: "cup",   item: "fine dry bread crumbs",                     group: "Pantry" },
+      { qty: 1,    unit: "cup",   item: "olive oil", prep: "for frying",             group: "Pantry" },
+      { qty: 2,    unit: "cup",   item: "lukewarm water",                            shop: false },
+      { qty: null, unit: "",      item: "Salt and pepper", prep: "to taste",         group: "Pantry" }
+    ],
+    steps: [
+      "Put the beef, veal and pork in a large bowl. Add the eggs, cheese, parsley, garlic, salt and pepper, and blend it together with your hands.",
+      "Work in the bread crumbs.",
+      "Add the water a cup at a time, until the mixture is quite moist.",
+      "Shape into balls about two and a half inches across — roughly six ounces each. Wet hands help.",
+      "Heat the oil in a large sauté pan over medium-high until hot but not smoking. Fry in batches: when the bottom is very brown and slightly crisp, turn and do the top.",
+      "Drain on paper towels, then lower them into the marinara to finish."
+    ]
+  },
+
+  marinara: {
+    title:  "Rao's Marinara",
+    source: "Rao's Cookbook — Frank Pellegrino",
+    url:    "https://www.food.com/recipe/raos-marinara-sauce-393184",
+    time:   "About 1½ hours, mostly unattended",
+    scale:  3,
+    makes:  { qty: 1, unit: "quart" },
+    ingredients: [
+      { qty: 2,    unit: "can",   item: "(28 oz) San Marzano tomatoes",              group: "Pantry" },
+      { qty: 0.25, unit: "cup",   item: "olive oil",                                 group: "Pantry" },
+      { qty: 2,    unit: "oz",    item: "salt pork or fatback",                      group: "Meat" },
+      { qty: 3,    unit: "tbsp",  item: "onion", prep: "minced",                     group: "Produce",
+        shop: { qty: 1, unit: "", item: "large yellow onion" } },
+      { qty: 2,    unit: "clove", item: "garlic", prep: "minced",                    group: "Produce" },
+      { qty: 6,    unit: "leaf",  item: "fresh basil", prep: "torn",                 group: "Produce",
+        shop: { qty: 1, unit: "bunch", item: "fresh basil" } },
+      { qty: null, unit: "",      item: "Dried oregano", prep: "a pinch",            group: "Pantry" },
+      { qty: null, unit: "",      item: "Salt and pepper", prep: "to taste",         group: "Pantry" }
+    ],
+    steps: [
+      "Tip the tomatoes out of the cans, keeping the juice. Crush them by hand, pulling out the hard core at the stem end and any tough skin or membrane.",
+      "Heat the oil in a large nonreactive pot over medium-low. Add the salt pork and cook about 5 minutes, until the fat has rendered out, then lift out the pork and throw it away.",
+      "Add the onion and cook about 3 minutes, until translucent and just starting to colour. Stir in the garlic and give it 30 seconds, just until it softens.",
+      "Add the tomatoes with their juice and salt. Bring it up to a boil, then drop it straight down to a bare simmer and leave it about an hour, until it thickens slightly.",
+      "Stir in the basil, oregano and pepper, and cook one more minute."
+    ]
+  }
+
+};
+
+/* On the shopping list but not part of any recipe — the pasta, the cheese
+   for the table, anything else you already know you have to buy.
+   Same shape as an ingredient, and these are never scaled. */
+const EXTRAS = [
+  { qty: 3, unit: "lb", item: "spaghetti",                    group: "Pantry" },
+  { qty: 8, unit: "oz", item: "Pecorino Romano for the table", group: "Dairy" }
 ];
 
 /* ══════════════════════════════════════════════════════════════════
@@ -371,6 +467,160 @@ body {
   text-wrap: balance;
 }
 
+/* ---- recipes ------------------------------------------------------
+   A disclosure under the night, closed by default — the page still
+   answers "what's for dinner" in one glance, and the recipe is one tap
+   away for whoever is actually cooking. */
+.recipe { margin-top: .6rem; }
+
+.recipe > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--lake);
+  padding: .2rem 0;
+}
+.recipe > summary::-webkit-details-marker { display: none; }
+
+.recipe > summary::before {
+  content: "";
+  width: .42rem; height: .42rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-1px) rotate(-45deg);
+  transition: transform .18s ease;
+}
+.recipe[open] > summary::before { transform: translateY(-2px) rotate(45deg); }
+
+.recipe-body {
+  margin-top: .75rem;
+  padding: .95rem 1rem 1.05rem;
+  border-left: 2px solid rgba(60,128,121,.5);
+  background: rgba(15,46,40,.35);
+  border-radius: 0 4px 4px 0;
+}
+
+.recipe-meta {
+  font-size: .75rem;
+  line-height: 1.5;
+  color: var(--ash);
+  margin-bottom: .85rem;
+}
+.recipe-meta a { color: var(--lake); }
+
+.recipe h4 {
+  margin: 0 0 .45rem;
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+.recipe .ingredients + h4 { margin-top: 1.1rem; }
+
+.recipe .ingredients li {
+  font-size: .92rem;
+  line-height: 1.5;
+  padding: .16rem 0;
+}
+.recipe .ingredients .amt {
+  color: var(--lantern);
+  font-variant-numeric: tabular-nums;
+}
+.recipe .ingredients .prep { color: var(--ash); }
+
+.recipe .steps { counter-reset: step; }
+.recipe .steps li {
+  position: relative;
+  padding: .3rem 0 .3rem 1.6rem;
+  font-size: .92rem;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.recipe .steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: .34rem;
+  font-size: .74rem;
+  font-weight: 700;
+  color: var(--lake);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- shopping list ------------------------------------------------ */
+.shop-group { margin-bottom: 1.6rem; }
+.shop-group h3 {
+  margin: 0 0 .5rem;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--lantern);
+}
+.shop-group.is-loose h3 { color: var(--ash); }
+
+.shop-group li {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0 .5rem;
+  font-size: 1rem;
+  line-height: 1.45;
+  padding: .3rem 0;
+  border-top: 1px solid rgba(237,228,211,.07);
+}
+.shop-group li:first-child { border-top: 0; }
+.shop-group .amt {
+  color: var(--lantern);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+/* The nights with no recipe yet don't have an amount column to line up
+   against — they're a day and a list of names, so let them run inline. */
+.shop-group.is-loose li { display: block; font-size: .95rem; }
+.shop-group.is-loose .for {
+  color: var(--lake);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-right: .5rem;
+}
+
+.copy {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+  padding: .6rem 1rem;
+  border: 1px solid rgba(242,169,59,.45);
+  border-radius: 3px;
+  background: none;
+  font: inherit;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--lantern);
+  cursor: pointer;
+}
+.copy:hover { background: rgba(242,169,59,.1); }
+.copy-said {
+  margin-left: .75rem;
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--lake);
+}
+
 .panel-note {
   margin-top: 1.5rem;
   font-size: .85rem;
@@ -468,6 +718,8 @@ noscript .fallback {
                 aria-controls="panel-week" aria-selected="true" tabindex="0">The week</button>
         <button class="tab" type="button" role="tab" id="tab-kids"
                 aria-controls="panel-kids" aria-selected="false" tabindex="-1">Kids menu</button>
+        <button class="tab" type="button" role="tab" id="tab-shop"
+                aria-controls="panel-shop" aria-selected="false" tabindex="-1">Shopping</button>
       </div>
 
       <div id="panel-week" role="tabpanel" aria-labelledby="tab-week" tabindex="0">
@@ -477,6 +729,14 @@ noscript .fallback {
       <div id="panel-kids" role="tabpanel" aria-labelledby="tab-kids" tabindex="0" hidden>
         <ul class="kids" id="kids"></ul>
         <p class="panel-note">Around every night, whatever the grown-ups are eating.</p>
+      </div>
+
+      <div id="panel-shop" role="tabpanel" aria-labelledby="tab-shop" tabindex="0" hidden>
+        <p>
+          <button class="copy" type="button" id="copy">Copy the list</button>
+          <span class="copy-said" id="copy-said" role="status" aria-live="polite"></span>
+        </p>
+        <div id="shop"></div>
       </div>
     </div>
   </section>
@@ -563,6 +823,57 @@ noscript .fallback {
     return node;
   }
 
+  /* ---- amounts -----------------------------------------------------
+     Recipe quantities are stored as plain numbers so they can be scaled
+     and added together, and turned back into the fractions a cook
+     expects only at the moment they're printed. */
+
+  var FRACTIONS = [
+    [.125, "⅛"], [.25, "¼"], [.333, "⅓"], [.375, "⅜"], [.5, "½"],
+    [.625, "⅝"], [.667, "⅔"], [.75, "¾"], [.875, "⅞"]
+  ];
+
+  var PLURALS = {
+    cup: "cups", clove: "cloves", can: "cans", leaf: "leaves",
+    bunch: "bunches", pinch: "pinches", jar: "jars", loaf: "loaves",
+    head: "heads", sprig: "sprigs", meatball: "meatballs", quart: "quarts"
+  };
+
+  function qtyText(n) {
+    if (n === null || n === undefined) { return ""; }
+    var whole = Math.floor(n + 1e-9);
+    var rest  = n - whole;
+    var mark  = "";
+
+    for (var i = 0; i < FRACTIONS.length; i++) {
+      if (Math.abs(rest - FRACTIONS[i][0]) < .021) { mark = FRACTIONS[i][1]; break; }
+    }
+    /* Nothing tidy to land on — say the number plainly rather than
+       rounding a shopping amount to something that isn't true. */
+    if (!mark && rest > .021) { return String(Math.round(n * 100) / 100); }
+    if (!whole) { return mark || "0"; }
+    return whole + mark;
+  }
+
+  function unitText(unit, n) {
+    if (!unit) { return ""; }
+    return (n > 1 && PLURALS[unit]) ? PLURALS[unit] : unit;
+  }
+
+  /* "1½ tbsp flat-leaf parsley" — amount and name kept apart so the
+     amount can be coloured and the name can line up in a column. */
+  function amountOf(ing) {
+    return [qtyText(ing.qty), unitText(ing.unit, ing.qty)]
+             .filter(Boolean).join(" ");
+  }
+
+  function scaled(ing, by) {
+    var out = {};
+    for (var k in ing) { if (ing.hasOwnProperty(k)) { out[k] = ing[k]; } }
+    if (typeof ing.qty === "number") { out.qty = ing.qty * by; }
+    return out;
+  }
+
   /* ---- the hero ----------------------------------------------------
      Three states: before the trip, during it, after Friday. */
 
@@ -606,6 +917,70 @@ noscript .fallback {
                     " · " + shortDate(dateOfNight(index)));
   }
 
+  /* ---- recipes ------------------------------------------------------
+     Closed by default. The page's job is still to answer "what's for
+     dinner" without a tap; the recipe is there for whoever is cooking. */
+
+  function recipeNode(key) {
+    var recipe = RECIPES[key];
+    if (!recipe) { return null; }
+
+    var by   = recipe.scale || 1;
+    var box  = make("details", "recipe");
+    var head = make("summary", null, "Recipe · " + recipe.title);
+    box.appendChild(head);
+
+    var body = make("div", "recipe-body");
+
+    /* Yield is scaled too, so the line says what you'll actually end up
+       with rather than what the book says. */
+    var meta  = make("p", "recipe-meta");
+    var bits  = [];
+    if (recipe.makes) {
+      bits.push("Makes " + qtyText(recipe.makes.qty * by) + " " +
+                unitText(recipe.makes.unit, recipe.makes.qty * by));
+    }
+    if (by !== 1) { bits.push(by + "× the original, for our sixteen"); }
+    if (recipe.time) { bits.push(recipe.time); }
+    meta.appendChild(document.createTextNode(bits.join(" · ")));
+
+    if (recipe.source) {
+      meta.appendChild(make("br"));
+      if (recipe.url) {
+        var link = make("a", null, recipe.source);
+        link.href = recipe.url;
+        link.rel = "noopener noreferrer";
+        link.target = "_blank";
+        meta.appendChild(link);
+      } else {
+        meta.appendChild(document.createTextNode(recipe.source));
+      }
+    }
+    body.appendChild(meta);
+
+    body.appendChild(make("h4", null, "Ingredients"));
+    var ings = make("ul", "ingredients");
+    recipe.ingredients.forEach(function (ing) {
+      var line = make("li");
+      var amt  = amountOf(scaled(ing, by));
+      if (amt) { line.appendChild(make("span", "amt", amt + " ")); }
+      line.appendChild(document.createTextNode(ing.item));
+      if (ing.prep) { line.appendChild(make("span", "prep", ", " + ing.prep)); }
+      ings.appendChild(line);
+    });
+    body.appendChild(ings);
+
+    body.appendChild(make("h4", null, "Method"));
+    var steps = make("ol", "steps");
+    recipe.steps.forEach(function (step) {
+      steps.appendChild(make("li", null, step));
+    });
+    body.appendChild(steps);
+
+    box.appendChild(body);
+    return box;
+  }
+
   /* ---- the week list ----------------------------------------------- */
 
   function renderWeek() {
@@ -640,6 +1015,11 @@ noscript .fallback {
       body.appendChild(setWho(make("p"), "night-who", night.who, ""));
       if (night.note) { body.appendChild(make("p", "night-note", night.note)); }
 
+      (night.cook || []).forEach(function (key) {
+        var recipe = recipeNode(key);
+        if (recipe) { body.appendChild(recipe); }
+      });
+
       item.appendChild(body);
       list.appendChild(item);
     }
@@ -660,6 +1040,198 @@ noscript .fallback {
       item.appendChild(make("p", "kid-meal", KIDS[i]));
       list.appendChild(item);
     }
+  }
+
+  /* ---- the shopping list --------------------------------------------
+     Everything the week's recipes call for, scaled, added up and sorted
+     into aisles — plus an honest tail of what still has no recipe, so
+     nothing quietly falls off the list. */
+
+  var AISLES = ["Produce", "Meat", "Dairy", "Bakery", "Pantry"];
+
+  function shoppingRows() {
+    var rows = [];
+    var seen = {};
+
+    /* Two lines merge only when the item and the unit match exactly.
+       Adding cups to tablespoons behind the owner's back would be a
+       nice trick right up until it was wrong in a store. */
+    function push(ing, group) {
+      var key = (ing.item + "|" + (ing.unit || "")).toLowerCase();
+
+      if (seen.hasOwnProperty(key)) {
+        var at = rows[seen[key]];
+        if (typeof at.qty === "number" && typeof ing.qty === "number") {
+          at.qty += ing.qty;
+        } else {
+          at.qty = null;   /* one of them is a "to taste" — just name it */
+        }
+        return;
+      }
+
+      seen[key] = rows.length;
+      rows.push({
+        qty:   typeof ing.qty === "number" ? ing.qty : null,
+        unit:  ing.unit || "",
+        item:  ing.item,
+        group: group || "Pantry"
+      });
+    }
+
+    NIGHTS.forEach(function (night) {
+      (night.cook || []).forEach(function (key) {
+        var recipe = RECIPES[key];
+        if (!recipe) { return; }
+        var by = recipe.scale || 1;
+
+        recipe.ingredients.forEach(function (ing) {
+          if (ing.shop === false) { return; }
+          if (ing.shop) { push(ing.shop, ing.shop.group || ing.group); }
+          else          { push(scaled(ing, by), ing.group); }
+        });
+      });
+    });
+
+    EXTRAS.forEach(function (extra) { push(extra, extra.group); });
+
+    return rows;
+  }
+
+  /* Nights and sides with no recipe behind them. Shown rather than
+     dropped — the gaps are the point of looking at this tab early. */
+  function looseEnds() {
+    var out = [];
+
+    for (var i = 0; i < COUNT; i++) {
+      var night = NIGHTS[i];
+      var bits  = [];
+      if (!(night.cook || []).length) { bits.push(night.meal); }
+      if (night.side1) { bits.push(night.side1); }
+      if (night.side2) { bits.push(night.side2); }
+      if (bits.length) { out.push({ for: DAYS[i], what: bits.join(" · ") }); }
+    }
+
+    if (KIDS.length) { out.push({ for: "Kids", what: KIDS.join(" · ") }); }
+    return out;
+  }
+
+  function renderShop() {
+    var host = document.getElementById("shop");
+    var rows = shoppingRows();
+
+    AISLES.forEach(function (aisle) {
+      var mine = rows.filter(function (row) { return row.group === aisle; });
+      if (!mine.length) { return; }
+
+      var group = make("section", "shop-group");
+      group.appendChild(make("h3", null, aisle));
+
+      var list = make("ul");
+      mine.forEach(function (row) {
+        /* The trailing space is a real character, not just the grid gap,
+           so the line still reads as an amount and a thing when it's
+           spoken aloud or dragged out of the page. */
+        var amt  = amountOf(row);
+        var line = make("li");
+        line.appendChild(make("span", "amt", amt ? amt + " " : ""));
+        line.appendChild(make("span", null, row.item));
+        list.appendChild(line);
+      });
+
+      group.appendChild(list);
+      host.appendChild(group);
+    });
+
+    var loose = looseEnds();
+    if (loose.length) {
+      var tail = make("section", "shop-group is-loose");
+      tail.appendChild(make("h3", null, "Still to work out"));
+
+      var tailList = make("ul");
+      loose.forEach(function (row) {
+        var line = make("li");
+        line.appendChild(make("span", "for", row.for + " "));
+        line.appendChild(document.createTextNode(row.what));
+        tailList.appendChild(line);
+      });
+
+      tail.appendChild(tailList);
+      host.appendChild(tail);
+    }
+  }
+
+  /* ---- copying it out ------------------------------------------------
+     Plain text, because it's going into a group message or the Notes
+     app, not into anything that understands markup. */
+
+  function shopText() {
+    var rows  = shoppingRows();
+    var lines = ["Yooper Meals — shopping list",
+                 shortDate(dateOfNight(0)) + " – " + shortDate(dateOfNight(COUNT - 1)),
+                 ""];
+
+    AISLES.forEach(function (aisle) {
+      var mine = rows.filter(function (row) { return row.group === aisle; });
+      if (!mine.length) { return; }
+
+      lines.push(aisle.toUpperCase());
+      mine.forEach(function (row) {
+        var amt = amountOf(row);
+        lines.push("- " + (amt ? amt + " " : "") + row.item);
+      });
+      lines.push("");
+    });
+
+    var loose = looseEnds();
+    if (loose.length) {
+      lines.push("STILL TO WORK OUT");
+      loose.forEach(function (row) { lines.push("- " + row.for + ": " + row.what); });
+      lines.push("");
+    }
+
+    return lines.join("\n").trim() + "\n";
+  }
+
+  function initCopy() {
+    var button = document.getElementById("copy");
+    var said   = document.getElementById("copy-said");
+
+    function say(text) {
+      said.textContent = text;
+      setTimeout(function () { said.textContent = ""; }, 2500);
+    }
+
+    /* Older phone browsers don't have the async clipboard API, and it's
+       refused outright on plain http — fall back to selecting a scratch
+       textarea, which works everywhere this page will realistically be
+       opened. */
+    function theOldWay(text) {
+      var pad = document.createElement("textarea");
+      pad.value = text;
+      pad.setAttribute("readonly", "");
+      pad.style.position = "fixed";
+      pad.style.top = "-1000px";
+      document.body.appendChild(pad);
+      pad.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(pad);
+      return ok;
+    }
+
+    button.addEventListener("click", function () {
+      var text = shopText();
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { say("Copied"); },
+          function () { say(theOldWay(text) ? "Copied" : "Couldn't copy"); }
+        );
+        return;
+      }
+
+      say(theOldWay(text) ? "Copied" : "Couldn't copy");
+    });
   }
 
   /* ---- tabs ---------------------------------------------------------
@@ -696,6 +1268,8 @@ noscript .fallback {
   renderHero();
   renderWeek();
   renderKids();
+  renderShop();
+  initCopy();
   initTabs();
 })();
 </script>
