@@ -861,8 +861,11 @@ noscript .fallback {
   }
 
   /* "1½ tbsp flat-leaf parsley" — amount and name kept apart so the
-     amount can be coloured and the name can line up in a column. */
+     amount can be coloured and the name can line up in a column.
+     A unit with no number behind it is meaningless ("cup olive oil"),
+     so a qty-less ingredient just gives its name. */
   function amountOf(ing) {
+    if (typeof ing.qty !== "number") { return ""; }
     return [qtyText(ing.qty), unitText(ing.unit, ing.qty)]
              .filter(Boolean).join(" ");
   }
@@ -940,7 +943,7 @@ noscript .fallback {
       bits.push("Makes " + qtyText(recipe.makes.qty * by) + " " +
                 unitText(recipe.makes.unit, recipe.makes.qty * by));
     }
-    if (by !== 1) { bits.push(by + "× the original, for our sixteen"); }
+    if (by !== 1) { bits.push(by + "× the original"); }
     if (recipe.time) { bits.push(recipe.time); }
     meta.appendChild(document.createTextNode(bits.join(" · ")));
 
@@ -1049,6 +1052,20 @@ noscript .fallback {
 
   var AISLES = ["Produce", "Meat", "Dairy", "Bakery", "Pantry"];
 
+  /* The aisles in order, then any group the config named that isn't one
+     of them. A typo'd group has to still show up somewhere — dropping
+     an ingredient because it says "produce" instead of "Produce" would
+     be a silent hole in a shopping list, which is the one thing this
+     tab must never have. It shows up under its own odd heading, which
+     is exactly how you spot it. */
+  function aisleOrder(rows) {
+    var order = AISLES.slice();
+    rows.forEach(function (row) {
+      if (order.indexOf(row.group) === -1) { order.push(row.group); }
+    });
+    return order;
+  }
+
   function shoppingRows() {
     var rows = [];
     var seen = {};
@@ -1119,7 +1136,7 @@ noscript .fallback {
     var host = document.getElementById("shop");
     var rows = shoppingRows();
 
-    AISLES.forEach(function (aisle) {
+    aisleOrder(rows).forEach(function (aisle) {
       var mine = rows.filter(function (row) { return row.group === aisle; });
       if (!mine.length) { return; }
 
@@ -1170,7 +1187,7 @@ noscript .fallback {
                  shortDate(dateOfNight(0)) + " – " + shortDate(dateOfNight(COUNT - 1)),
                  ""];
 
-    AISLES.forEach(function (aisle) {
+    aisleOrder(rows).forEach(function (aisle) {
       var mine = rows.filter(function (row) { return row.group === aisle; });
       if (!mine.length) { return; }
 

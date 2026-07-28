@@ -56,7 +56,7 @@ Meals and sides are real, and two nights have cooks. `START` is still a guess, p
 
 A night lists `RECIPES` keys in its `cook` array and renders those recipes; leave `cook` off and the night is just a name and two sides, as before. Monday points at `meatballs` and `marinara`, both Rao's.
 
-Ingredients are `{ qty, unit, item, prep, group }`. `qty` is a **number** — never a string like `"1½"` — because the shopping list scales it and adds it up, and only turns it back into a fraction when it prints. `prep` ("minced", "chopped") shows in the recipe and is dropped from the shopping list. `group` is the aisle: Produce, Meat, Dairy, Bakery, Pantry, in that order.
+Ingredients are `{ qty, unit, item, prep, group }`. `qty` is a **number** — never a string like `"1½"` — because the shopping list scales it and adds it up, and only turns it back into a fraction when it prints. `prep` ("minced", "chopped") shows in the recipe and is dropped from the shopping list. `group` is the aisle: Produce, Meat, Dairy, Bakery, Pantry, in that order. Anything else — a typo like `"produce"`, or a new aisle — gets its own section after those five rather than being dropped. That's deliberate: a silently missing ingredient is the one failure this tab can't have, and an odd heading is how you notice.
 
 `scale` multiplies the whole recipe — every quantity and the yield. **Store recipes at their published amounts and change `scale`**, so the original stays checkable against the source. The party is 9 adults and 7 kids, so meatballs run at 2 (28 meatballs) and marinara at 3 (~3 quarts, since it sauces the pasta as well).
 
