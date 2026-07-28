@@ -123,9 +123,11 @@ const KIDS = [
      shop: false        keep it out of the list entirely (tap water)
      shop: { … }        buy this instead — "9 tbsp onion" is useless in
                         a store, "1 large yellow onion" is not.  What
-                        you write here is taken as-is and is NOT
-                        multiplied by scale, so it's the real amount
-                        to put in the cart. */
+                        you write here is taken as-is and is NEVER
+                        multiplied, so it's the real amount to put in
+                        the cart.  The batch size moves on its own when
+                        a night's heads change, so these are the lines
+                        to look over by hand afterwards. */
 const RECIPES = {
 
   meatballs: {
