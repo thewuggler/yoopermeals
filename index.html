@@ -15,14 +15,31 @@
 const START = [2026, 8, 2];
 
 /* Six dinners, Sunday through Friday, in order.  Keep it at six.
-   note can be left as "" and it just won't show up. */
+   side1, side2 and note can each be left as "" and they just won't show up. */
 const NIGHTS = [
-  { meal: "Pasties",            who: "[Sibling 1]",  note: "Rutabaga in half of them, none in the other half." },
-  { meal: "Lake Trout",         who: "Mom",          note: "" },
-  { meal: "Sloppy Joes",        who: "[Sibling 2]",  note: "Easy night — beach day, nobody wants to cook." },
-  { meal: "Chicken & Rice",     who: "[Sibling 3]",  note: "" },
-  { meal: "Burgers & Brats",    who: "Dad",          note: "Grill out back if it's not raining." },
-  { meal: "Fish Fry",           who: "Everyone",     note: "Last night. Leftovers get eaten or they go home with you." }
+  { meal: "Ribs",               who: "[Sibling 1]",
+    side1: "Coleslaw",          side2: "Baked beans",
+    note: "Low and slow — they go on early afternoon." },
+
+  { meal: "Meatballs & Pasta",  who: "Mom",
+    side1: "Garlic bread",      side2: "Caesar salad",
+    note: "" },
+
+  { meal: "Free-for-All",       who: "[Sibling 2]",
+    side1: "Pasta salad",       side2: "Veggie tray & dip",
+    note: "Grill's on — bring whatever you feel like cooking." },
+
+  { meal: "Tacos",              who: "[Sibling 3]",
+    side1: "Spanish rice",      side2: "Chips & guacamole",
+    note: "" },
+
+  { meal: "Grill Night",        who: "Dad",
+    side1: "Corn on the cob",   side2: "Potato salad",
+    note: "Out back if it's not raining." },
+
+  { meal: "Pizza",              who: "Everyone",
+    side1: "Garden salad",      side2: "Garlic knots",
+    note: "Last night. Leftovers get eaten or they go home with you." }
 ];
 
 /* The kids' standbys — no schedule, they're around every night.
@@ -177,8 +194,22 @@ body {
   text-shadow: 0 2px 0 rgba(15,46,40,.55);
 }
 
+/* Sides sit directly under the meal name, quiet enough not to compete
+   with it. The separator is --lake so --lantern stays reserved for
+   tonight, the cook and the eyebrow. */
+.sides {
+  margin-top: clamp(.9rem, 3.5vw, 1.25rem);
+  font-size: 1rem;
+  color: rgba(237, 228, 211, .84);
+}
+.sides .sep,
+.night-sides .sep {
+  color: var(--lake);
+  padding: 0 .2em;   /* the text itself already carries a space each side */
+}
+
 .who {
-  margin-top: clamp(1rem, 4vw, 1.5rem);
+  margin-top: clamp(.7rem, 2.5vw, 1rem);
   font-size: 1.05rem;
   font-weight: 500;
   color: var(--lantern);
@@ -279,10 +310,15 @@ body {
   margin-top: .12rem;
   text-wrap: balance;
 }
+.night .night-sides {
+  font-size: .95rem;
+  color: rgba(237, 228, 211, .7);
+  margin-top: .2rem;
+}
 .night .night-who {
   font-size: .92rem;
   color: var(--ash);
-  margin-top: .1rem;
+  margin-top: .2rem;
 }
 .night .night-note {
   font-size: .88rem;
@@ -299,6 +335,7 @@ body {
 .night.is-tonight .n,
 .night.is-tonight .night-meal { color: var(--lantern); }
 .night.is-tonight .night-meal { font-weight: 700; }
+.night.is-tonight .night-sides { color: var(--birch); }
 .night.is-tonight .night-who { color: var(--birch); }
 
 /* ---- kids list ---------------------------------------------------- */
@@ -390,6 +427,7 @@ noscript .fallback {
     <div class="hero-inner">
       <p class="eyebrow" id="eyebrow"></p>
       <h1 class="meal" id="meal"></h1>
+      <p class="sides" id="sides" hidden></p>
       <p class="who" id="who" hidden></p>
       <p class="note" id="note" hidden></p>
       <p class="counter" id="counter" hidden></p>
@@ -475,6 +513,23 @@ noscript .fallback {
     return node;
   }
 
+  /* "Coleslaw · Baked beans", with the dot in its own span so it can be
+     coloured separately. The spaces around the dot are real characters, not
+     just CSS padding, so the line still reads as two things when it's spoken
+     aloud or pasted into the group text. One side on its own is fine; none
+     hides the line. */
+  function sidesInto(node, night) {
+    var parts = [night.side1, night.side2].filter(Boolean);
+    node.textContent = "";
+    if (!parts.length) { node.hidden = true; return node; }
+    for (var i = 0; i < parts.length; i++) {
+      if (i) { node.appendChild(make("span", "sep", " · ")); }
+      node.appendChild(document.createTextNode(parts[i]));
+    }
+    node.hidden = false;
+    return node;
+  }
+
   /* ---- the hero ----------------------------------------------------
      Three states: before the trip, during it, after Friday. */
 
@@ -482,10 +537,13 @@ noscript .fallback {
     document.getElementById("stamp").textContent =
       shortDate(dateOfNight(0)) + " – " + shortDate(dateOfNight(COUNT - 1));
 
+    var heroSides = document.getElementById("sides");
+
     // After Friday — sign-off.
     if (index >= COUNT) {
       fill("eyebrow", "That's the week");
       fill("meal", "Till next time");
+      sidesInto(heroSides, {});
       fill("who", "");
       fill("note", "Six dinners, nobody went hungry. Text the group when you're home.");
       fill("counter", "");
@@ -497,6 +555,7 @@ noscript .fallback {
       var out = -index;
       fill("eyebrow", out === 1 ? "Tomorrow" : out + " days out");
       fill("meal", NIGHTS[0].meal);
+      sidesInto(heroSides, NIGHTS[0]);
       fill("who", NIGHTS[0].who ? "Cooked by " + NIGHTS[0].who : "");
       fill("note", NIGHTS[0].note);
       fill("counter", "First night · " + DAYS[0] + ", " + shortDate(dateOfNight(0)));
@@ -507,6 +566,7 @@ noscript .fallback {
     var tonight = NIGHTS[index];
     fill("eyebrow", "Tonight · " + DAYS[index]);
     fill("meal", tonight.meal);
+    sidesInto(heroSides, tonight);
     fill("who", tonight.who ? "Cooked by " + tonight.who : "");
     fill("note", tonight.note);
     fill("counter", "Night " + (index + 1) + " of " + COUNT +
@@ -540,6 +600,10 @@ noscript .fallback {
       body.appendChild(day);
 
       body.appendChild(make("p", "night-meal", night.meal));
+
+      var sides = sidesInto(make("p", "night-sides"), night);
+      if (!sides.hidden) { body.appendChild(sides); }
+
       if (night.who)  { body.appendChild(make("p", "night-who", night.who)); }
       if (night.note) { body.appendChild(make("p", "night-note", night.note)); }
 
