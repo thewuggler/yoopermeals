@@ -28,13 +28,18 @@ The page reads the device's local date, computes how many days have elapsed sinc
 
 Below the hero, all six nights render as a list. Past nights dim to 38% opacity, tonight gets the accent color and bold weight.
 
+The week list sits under the first of three tabs — **The week**, **Kids menu**, **Shopping**. A night that has recipes shows them as `<details>` disclosures inside its row, closed by default so the page still answers "what's for dinner" without a tap.
+
 ## Editing data
 
 Everything editable is in one `<script>` block at the top of `index.html`, fenced by comment banners.
 
 ```js
-const START = [2026, 8, 2];   // the Sunday, 1-indexed month
-const NIGHTS = [ { meal, who, side1, side2, note }, ... ];  // exactly 6, Sunday→Friday
+const START   = [2026, 8, 2];   // the Sunday, 1-indexed month
+const NIGHTS  = [ { meal, who, side1, side2, note, cook }, ... ];  // exactly 6, Sunday→Friday
+const KIDS    = [ "Chicken Nuggets", ... ];     // no schedule, any length
+const RECIPES = { key: { title, source, url, time, scale, makes, ingredients, steps } };
+const EXTRAS  = [ { qty, unit, item, group }, ... ];   // on the list, not from a recipe
 ```
 
 `side1`, `side2` and `note` may each be an empty string and will be omitted from the render — a night with one side renders one, a night with none drops the line. `NIGHTS` must stay at length 6; the day labels and the "of 6" counter assume it.
@@ -46,6 +51,25 @@ Sides render as `side1 · side2` directly under the meal name, in both the hero 
 Not every night has a person cooking, so `AS_IS_COOKS` lists the cook lines that are statements about the night rather than names — currently "Up for grabs" and "Every person for themselves". Those print exactly as written, with no "Cooked by" in front, and are styled as a phrase: muted in the hero, italic in the week list. Anything not in that list is treated as a name and gets the prefix and the accent colour. Add a phrase to the list rather than teaching the renderer to guess.
 
 Meals and sides are real, and two nights have cooks. `START` is still a guess, pending from the owner.
+
+## Recipes and the shopping list
+
+A night lists `RECIPES` keys in its `cook` array and renders those recipes; leave `cook` off and the night is just a name and two sides, as before. Monday points at `meatballs` and `marinara`, both Rao's.
+
+Ingredients are `{ qty, unit, item, prep, group }`. `qty` is a **number** — never a string like `"1½"` — because the shopping list scales it and adds it up, and only turns it back into a fraction when it prints. `prep` ("minced", "chopped") shows in the recipe and is dropped from the shopping list. `group` is the aisle: Produce, Meat, Dairy, Bakery, Pantry, in that order. Anything else — a typo like `"produce"`, or a new aisle — gets its own section after those five rather than being dropped. That's deliberate: a silently missing ingredient is the one failure this tab can't have, and an odd heading is how you notice.
+
+`scale` multiplies the whole recipe — every quantity and the yield. **Store recipes at their published amounts and change `scale`**, so the original stays checkable against the source. The party is 9 adults and 7 kids, so meatballs run at 2 (28 meatballs) and marinara at 3 (~3 quarts, since it sauces the pasta as well).
+
+`shop` overrides what an ingredient contributes to the list:
+
+- `shop: false` keeps it off entirely — tap water is the only current case.
+- `shop: { qty, unit, item }` substitutes what you actually buy: "9 tbsp onion" is useless in a store, "1 large yellow onion" is not. **This override is taken as written and is not multiplied by `scale`** — it's the real amount for the cart, so revisit these by hand if `scale` changes.
+
+Two lines merge on the list only when item *and* unit match exactly — cups are never silently added to tablespoons. That's why olive oil combines across both recipes (2 cups + ¾ cup → 2¾ cups) but the Pecorino in the meatballs stays separate from the Pecorino for the table.
+
+Below the aisles, **Still to work out** lists every night and side with no recipe behind it, plus the kids' standbys. It's generated, not hand-maintained: fill in a recipe and the night leaves that section on its own. Keep it — the gaps are the reason to open this tab before the trip.
+
+**Copy the list** writes the whole thing out as plain text for the group thread. It's an export, not storage, and it's the only button on the site that does anything.
 
 ## Design
 
@@ -78,3 +102,5 @@ The one signature element is the hero: lantern-glow radial behind an oversized m
 - Real trip dates — `START` is currently a placeholder guess
 - Cooks for three of the six nights — Wednesday, Thursday and Friday are "Up for grabs"
 - Sides are recommendations, not confirmed with whoever's cooking
+- Recipes for the other five nights, and for the sides — everything without one shows under "Still to work out" on the shopping tab
+- The shopping list has no quantities for anything outside a recipe; `EXTRAS` currently covers only the spaghetti and the table cheese
