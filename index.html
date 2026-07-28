@@ -16,12 +16,14 @@ const START = [2026, 8, 2];
 
 /* Six dinners, Sunday through Friday, in order.  Keep it at six.
    Leave who as "" and the night shows as "Up for grabs".
-   side1, side2 and note can each be left as "" and they just won't show up.
+   side1, side2, side3 and note can each be left as "" or left off entirely
+   and they just won't show up.
    cook is an optional list of RECIPES keys — the night shows those recipes
    and the shopping list adds up what they call for. */
 const NIGHTS = [
   { meal: "Ribs",               who: "Mom",
-    side1: "Coleslaw",          side2: "Baked beans",
+    side1: "Coleslaw",          side2: "Green beans w/ bacon",
+    side3: "Tater tots",
     note: "" },
 
   { meal: "Meatballs & Pasta",  who: "Jeff & Shanna",
@@ -792,13 +794,13 @@ noscript .fallback {
     return node;
   }
 
-  /* "Coleslaw · Baked beans", with the dot in its own span so it can be
-     coloured separately. The spaces around the dot are real characters, not
-     just CSS padding, so the line still reads as two things when it's spoken
-     aloud or pasted into the group text. One side on its own is fine; none
-     hides the line. */
+  /* "Coleslaw · Green beans w/ bacon", with the dot in its own span so it can
+     be coloured separately. The spaces around the dot are real characters, not
+     just CSS padding, so the line still reads as separate things when it's
+     spoken aloud or pasted into the group text. One side on its own is fine;
+     none hides the line. */
   function sidesInto(node, night) {
-    var parts = [night.side1, night.side2].filter(Boolean);
+    var parts = [night.side1, night.side2, night.side3].filter(Boolean);
     node.textContent = "";
     if (!parts.length) { node.hidden = true; return node; }
     for (var i = 0; i < parts.length; i++) {
@@ -1125,6 +1127,7 @@ noscript .fallback {
       if (!(night.cook || []).length) { bits.push(night.meal); }
       if (night.side1) { bits.push(night.side1); }
       if (night.side2) { bits.push(night.side2); }
+      if (night.side3) { bits.push(night.side3); }
       if (bits.length) { out.push({ for: DAYS[i], what: bits.join(" · ") }); }
     }
 
