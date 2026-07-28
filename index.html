@@ -25,6 +25,15 @@ const NIGHTS = [
   { meal: "Fish Fry",           who: "Everyone",     note: "Last night. Leftovers get eaten or they go home with you." }
 ];
 
+/* The kids' standbys — no schedule, they're around every night.
+   Add or remove lines freely; there's no fixed count here. */
+const KIDS = [
+  "Chicken Nuggets",
+  "Mac and Cheese",
+  "PB&J",
+  "Salami"
+];
+
 /* ══════════════════════════════════════════════════════════════════
    END OF THE EDITABLE PART.  Below here is layout and code.
    ══════════════════════════════════════════════════════════════════ */
@@ -58,8 +67,8 @@ const NIGHTS = [
 /* ---- reset -------------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body, h1, h2, p, ol, li, figure { margin: 0; padding: 0; }
-ol { list-style: none; }
+body, h1, h2, p, ol, ul, li, figure { margin: 0; padding: 0; }
+ol, ul { list-style: none; }
 
 body {
   background: var(--pine);
@@ -218,6 +227,66 @@ body {
   margin-bottom: 1.25rem;
 }
 
+/* ---- tabs --------------------------------------------------------- */
+[hidden] { display: none !important; }
+
+.tabs {
+  display: flex;
+  gap: clamp(1.25rem, 6vw, 2rem);
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(237,228,211,.09);
+}
+.tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 0 0 .7rem;
+  font: inherit;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ash);
+  cursor: pointer;
+}
+.tab[aria-selected="true"] {
+  color: var(--lantern);
+  border-bottom-color: var(--lantern);
+}
+
+/* ---- kids list ---------------------------------------------------- */
+.kid {
+  display: grid;
+  grid-template-columns: 2.35rem 1fr;
+  gap: 0 .5rem;
+  align-items: baseline;
+  padding: 1.05rem 0;
+  border-top: 1px solid rgba(237,228,211,.09);
+}
+.kid:first-child { border-top: 0; padding-top: .25rem; }
+
+.kid .mark {
+  font-size: .8rem;
+  color: var(--lake);
+}
+.kid .kid-meal {
+  font-size: 1.22rem;
+  font-weight: 500;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.panel-note {
+  margin-top: 1.5rem;
+  font-size: .85rem;
+  line-height: 1.55;
+  color: var(--ash);
+  opacity: .8;
+  text-wrap: pretty;
+}
+
 .night {
   display: grid;
   grid-template-columns: 2.35rem 1fr;
@@ -316,6 +385,8 @@ noscript .fallback {
 @media (min-width: 46rem) {
   .night { grid-template-columns: 3rem 1fr; padding: 1.25rem 0; }
   .night .night-meal { font-size: 1.35rem; }
+  .kid { grid-template-columns: 3rem 1fr; padding: 1.25rem 0; }
+  .kid .kid-meal { font-size: 1.35rem; }
 }
 </style>
 </head>
@@ -350,10 +421,25 @@ noscript .fallback {
     </svg>
   </section>
 
-  <section class="week" aria-labelledby="week-label">
+  <section class="week" aria-labelledby="menus-label">
     <div class="week-inner">
-      <h2 class="section-label" id="week-label">The week</h2>
-      <ol class="nights" id="nights"></ol>
+      <h2 class="sr-only" id="menus-label">Menus</h2>
+
+      <div class="tabs" role="tablist" aria-labelledby="menus-label">
+        <button class="tab" type="button" role="tab" id="tab-week"
+                aria-controls="panel-week" aria-selected="true" tabindex="0">The week</button>
+        <button class="tab" type="button" role="tab" id="tab-kids"
+                aria-controls="panel-kids" aria-selected="false" tabindex="-1">Kids menu</button>
+      </div>
+
+      <div id="panel-week" role="tabpanel" aria-labelledby="tab-week" tabindex="0">
+        <ol class="nights" id="nights"></ol>
+      </div>
+
+      <div id="panel-kids" role="tabpanel" aria-labelledby="tab-kids" tabindex="0" hidden>
+        <ul class="kids" id="kids"></ul>
+        <p class="panel-note">Around every night, whatever the grown-ups are eating.</p>
+      </div>
     </div>
   </section>
 </main>
@@ -481,8 +567,58 @@ noscript .fallback {
     }
   }
 
+  /* ---- the kids list ------------------------------------------------ */
+
+  function renderKids() {
+    var list = document.getElementById("kids");
+
+    for (var i = 0; i < KIDS.length; i++) {
+      var item = make("li", "kid");
+
+      var mark = make("span", "mark", "●");
+      mark.setAttribute("aria-hidden", "true");
+      item.appendChild(mark);
+
+      item.appendChild(make("p", "kid-meal", KIDS[i]));
+      list.appendChild(item);
+    }
+  }
+
+  /* ---- tabs ---------------------------------------------------------
+     Roving tabindex: only the selected tab is in the tab order, arrows
+     move between them. */
+
+  function initTabs() {
+    var tabs = [].slice.call(document.querySelectorAll('[role="tab"]'));
+
+    function select(tab, focusIt) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+      if (focusIt) { tab.focus(); }
+    }
+
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener("click", function () { select(tab, false); });
+
+      tab.addEventListener("keydown", function (e) {
+        var to = null;
+        if (e.key === "ArrowRight") { to = tabs[(i + 1) % tabs.length]; }
+        else if (e.key === "ArrowLeft") { to = tabs[(i - 1 + tabs.length) % tabs.length]; }
+        else if (e.key === "Home") { to = tabs[0]; }
+        else if (e.key === "End") { to = tabs[tabs.length - 1]; }
+        if (to) { e.preventDefault(); select(to, true); }
+      });
+    });
+  }
+
   renderHero();
   renderWeek();
+  renderKids();
+  initTabs();
 })();
 </script>
 
