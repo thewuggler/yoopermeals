@@ -19,34 +19,63 @@ const START = [2026, 8, 2];
    side1, side2, side3 and note can each be left as "" or left off entirely
    and they just won't show up.
    cook is an optional list of RECIPES keys — the night shows those recipes
-   and the shopping list adds up what they call for. */
+   and the shopping list adds up what they call for.
+
+   adults and kids are who is actually at the table that night.  They print
+   on the night and they set how far the recipes are scaled, so keep them
+   honest — people come and go through the week.
+     adults  a number
+     kids    a number if you only know the count, or a list of ages
+             ([13, 11, 7, 3.5]) if you know them.  Ages are better: a
+             thirteen-year-old eats an adult dinner and a three-year-old
+             does not, and the recipe scaling knows the difference. */
 const NIGHTS = [
   { meal: "Ribs",               who: "Mom",
+    adults: 7,                  kids: 7,
     side1: "Coleslaw",          side2: "Green beans w/ bacon",
     side3: "Tater tots",
     note: "" },
 
   { meal: "Meatballs & Pasta",  who: "Jeff & Shanna",
+    adults: 9,                  kids: 7,
     side1: "Garlic bread",      side2: "Italian salad",
     note: "",
     cook: ["meatballs", "marinara"] },
 
   { meal: "Free-for-All",       who: "Every person for themselves",
+    adults: 9,                  kids: 7,
     side1: "Pasta salad",       side2: "Veggie tray & dip",
     note: "" },
 
   { meal: "Tacos",              who: "",
+    adults: 7,                  kids: [13, 11, 7, 3.5],
     side1: "Spanish rice",      side2: "Chips & guacamole",
     note: "" },
 
   { meal: "Grill Night",        who: "",
+    adults: 7,                  kids: [13, 11, 7, 3.5],
     side1: "Corn on the cob",   side2: "Potato salad",
     note: "" },
 
   { meal: "Pizza",              who: "",
+    adults: 7,                  kids: [13, 11, 7, 3.5],
     side1: "Garden salad",      side2: "Garlic knots",
     note: "" }
 ];
+
+/* How much of a grown-up's dinner a kid of a given age actually eats.
+   Used to turn a night's heads into portions, which is what the recipes
+   are scaled against.  Edit these if the appetites here are wrong —
+   they're a judgement call, not a fact. */
+const KID_APPETITE = [
+  { under: 5,   eats: 0.35 },
+  { under: 10,  eats: 0.55 },
+  { under: 13,  eats: 0.75 },
+  { under: 999, eats: 1    }
+];
+
+/* What a kid counts for when the night gives a count and no ages. */
+const KID_EATS = 0.5;
 
 /* Some cook lines are statements about the night rather than a person.
    These print exactly as written, with no "Cooked by" in front. */
@@ -72,10 +101,17 @@ const KIDS = [
    A night points at these by key, through its cook list.
 
    Quantities are the recipe exactly as it was published — leave them
-   alone.  To feed more people change scale, and every quantity and the
-   yield are multiplied by it on the page and in the shopping list.
-   We are 9 adults and 7 kids, so the meatballs run double and the sauce
-   triple (the extra sauce is for the pasta).
+   alone.  Instead say how many grown-up portions the published recipe
+   feeds, in serves, and the page works out the batch size from the heads
+   on the night that's cooking it: every quantity and the yield are
+   multiplied, on the page and in the shopping list.  Batches round to the
+   nearest half, because half a recipe is a thing you can cook and 1.79 of
+   one is not.  Monday is 9 adults and 7 kids — 12½ portions — so the
+   meatballs come out double and the sauce triple.
+
+   scale, if you set it, pins the batch size and ignores the heads
+   entirely.  Reach for it only when a recipe genuinely isn't about how
+   many people are eating.
 
    Each ingredient is { qty, unit, item, prep, group }.
      qty   a number, or null for "to taste" things with no amount
@@ -97,7 +133,7 @@ const RECIPES = {
     source: "Rao's Cookbook — Frank Pellegrino",
     url:    "https://www.foodnetwork.com/recipes/raos-meatballs-5287055",
     time:   "About 1 hour",
-    scale:  2,
+    serves: 7,                                /* 14 meatballs, two apiece */
     makes:  { qty: 14, unit: "meatball" },
     ingredients: [
       { qty: 1,    unit: "lb",    item: "lean ground beef",                          group: "Meat" },
@@ -128,7 +164,7 @@ const RECIPES = {
     source: "Rao's Cookbook — Frank Pellegrino",
     url:    "https://www.food.com/recipe/raos-marinara-sauce-393184",
     time:   "About 1½ hours, mostly unattended",
-    scale:  3,
+    serves: 4,                                /* a quart sauces four, pasta and all */
     makes:  { qty: 1, unit: "quart" },
     ingredients: [
       { qty: 2,    unit: "can",   item: "(28 oz) San Marzano tomatoes",              group: "Pantry" },
@@ -313,9 +349,26 @@ body {
   color: rgba(237, 228, 211, .84);
 }
 .sides .sep,
-.night-sides .sep {
+.night-sides .sep,
+.heads .sep,
+.night-heads .sep {
   color: var(--lake);
   padding: 0 .2em;   /* the text itself already carries a space each side */
+}
+
+/* Who's actually at the table. A quiet stamp, not a headline — it's the
+   answer to "how much do I make", which is the second question of the
+   night, never the first. */
+.heads {
+  display: inline-block;
+  margin-top: clamp(.9rem, 3.5vw, 1.25rem);
+  padding: .32rem .8rem;
+  border: 1px solid rgba(60,128,121,.5);
+  border-radius: 999px;
+  font-size: .78rem;
+  line-height: 1.35;
+  color: rgba(237, 228, 211, .8);
+  text-wrap: balance;
 }
 
 .who {
@@ -436,6 +489,11 @@ body {
   color: var(--ash);
   margin-top: .2rem;
 }
+.night .night-heads {
+  font-size: .82rem;
+  color: var(--ash);
+  margin-top: .25rem;
+}
 .night .night-note {
   font-size: .88rem;
   color: var(--ash);
@@ -454,6 +512,7 @@ body {
 .night.is-tonight .night-sides { color: var(--birch); }
 .night .night-who.is-phrase { font-style: italic; }
 .night.is-tonight .night-who { color: var(--birch); }
+.night.is-tonight .night-heads { color: rgba(237, 228, 211, .8); }
 
 /* ---- kids list ---------------------------------------------------- */
 .kid { align-items: baseline; }
@@ -595,6 +654,13 @@ body {
   text-transform: uppercase;
   margin-right: .5rem;
 }
+/* How many you're buying for, on a night that has no recipe to say it. */
+.shop-group.is-loose .loose-heads {
+  display: block;
+  font-size: .78rem;
+  color: var(--ash);
+  opacity: .85;
+}
 
 .copy {
   appearance: none;
@@ -701,6 +767,7 @@ noscript .fallback {
       <p class="sides" id="sides" hidden></p>
       <p class="who" id="who" hidden></p>
       <p class="note" id="note" hidden></p>
+      <p class="heads" id="heads" hidden></p>
       <p class="counter" id="counter" hidden></p>
     </div>
 
@@ -797,10 +864,9 @@ noscript .fallback {
   /* "Coleslaw · Green beans w/ bacon", with the dot in its own span so it can
      be coloured separately. The spaces around the dot are real characters, not
      just CSS padding, so the line still reads as separate things when it's
-     spoken aloud or pasted into the group text. One side on its own is fine;
+     spoken aloud or pasted into the group text. One part on its own is fine;
      none hides the line. */
-  function sidesInto(node, night) {
-    var parts = [night.side1, night.side2, night.side3].filter(Boolean);
+  function dottedInto(node, parts) {
     node.textContent = "";
     if (!parts.length) { node.hidden = true; return node; }
     for (var i = 0; i < parts.length; i++) {
@@ -809,6 +875,10 @@ noscript .fallback {
     }
     node.hidden = false;
     return node;
+  }
+
+  function sidesInto(node, night) {
+    return dottedInto(node, [night.side1, night.side2, night.side3].filter(Boolean));
   }
 
   /* A night with no cook yet reads as "Up for grabs" rather than going
@@ -879,6 +949,91 @@ noscript .fallback {
     return out;
   }
 
+  /* ---- who's at the table -------------------------------------------
+     Heads are two different things at once: something to print on the
+     night, and the number the recipes are scaled against. Kids are the
+     reason those aren't the same — seven kids is seven place settings
+     but nothing like seven dinners. */
+
+  function kidAges(night) {
+    return Array.isArray(night && night.kids) ? night.kids : null;
+  }
+
+  function kidCount(night) {
+    var ages = kidAges(night);
+    if (ages) { return ages.length; }
+    return (night && typeof night.kids === "number") ? night.kids : 0;
+  }
+
+  function kidEats(age) {
+    for (var i = 0; i < KID_APPETITE.length; i++) {
+      if (age < KID_APPETITE[i].under) { return KID_APPETITE[i].eats; }
+    }
+    return 1;
+  }
+
+  /* Grown-up portions the night has to cover. null when the night doesn't
+     say who's coming, which leaves the recipes at their published size
+     rather than guessing. */
+  function portionsOf(night) {
+    if (!night || typeof night.adults !== "number") { return null; }
+    var ages  = kidAges(night);
+    var total = night.adults;
+
+    if (ages) {
+      ages.forEach(function (age) { total += kidEats(age); });
+    } else if (typeof night.kids === "number") {
+      total += night.kids * KID_EATS;
+    }
+    return total;
+  }
+
+  function plural(n, word) { return n + " " + word + (n === 1 ? "" : "s"); }
+
+  /* ["7 adults", "4 kids", "ages 13, 11, 7, 3½"] — the ages only when the
+     night actually lists them. */
+  function headsParts(night) {
+    if (!night || typeof night.adults !== "number") { return []; }
+
+    var parts = [plural(night.adults, "adult")];
+    var kids  = kidCount(night);
+    if (kids) { parts.push(plural(kids, "kid")); }
+
+    var ages = kidAges(night);
+    if (ages && ages.length) {
+      parts.push((ages.length === 1 ? "age " : "ages ") +
+                 ages.map(qtyText).join(", "));
+    }
+    return parts;
+  }
+
+  function headsInto(node, night) {
+    return dottedInto(node, headsParts(night));
+  }
+
+  /* "9 adults & 7 kids" — the same count said in one breath, for places
+     that already have a line of their own going. */
+  function headsShort(night) {
+    return headsParts(night).slice(0, 2).join(" & ");
+  }
+
+  /* ---- batch size ----------------------------------------------------
+     A recipe is written for so many people; the night has so many people.
+     Round the ratio to the nearest half, because half a recipe is a thing
+     you can stand at a counter and cook and 1.79 of one is not. */
+
+  function roundBatch(n) {
+    var half = Math.round(n * 2) / 2;
+    return half < .5 ? .5 : half;
+  }
+
+  function scaleFor(recipe, night) {
+    if (typeof recipe.scale === "number") { return recipe.scale; }  /* pinned by hand */
+    var mouths = portionsOf(night);
+    if (mouths === null || !recipe.serves) { return 1; }
+    return roundBatch(mouths / recipe.serves);
+  }
+
   /* ---- the hero ----------------------------------------------------
      Three states: before the trip, during it, after Friday. */
 
@@ -887,6 +1042,7 @@ noscript .fallback {
       shortDate(dateOfNight(0)) + " – " + shortDate(dateOfNight(COUNT - 1));
 
     var heroSides = document.getElementById("sides");
+    var heroHeads = document.getElementById("heads");
 
     // After Friday — sign-off.
     if (index >= COUNT) {
@@ -895,6 +1051,7 @@ noscript .fallback {
       sidesInto(heroSides, {});
       fill("who", "");
       fill("note", "Six dinners, nobody went hungry. Text the group when you're home.");
+      headsInto(heroHeads, null);
       fill("counter", "");
       return;
     }
@@ -907,6 +1064,7 @@ noscript .fallback {
       sidesInto(heroSides, NIGHTS[0]);
       setWho(document.getElementById("who"), "who", NIGHTS[0].who, "Cooked by ");
       fill("note", NIGHTS[0].note);
+      headsInto(heroHeads, NIGHTS[0]);
       fill("counter", "First night · " + DAYS[0] + ", " + shortDate(dateOfNight(0)));
       return;
     }
@@ -918,6 +1076,7 @@ noscript .fallback {
     sidesInto(heroSides, tonight);
     setWho(document.getElementById("who"), "who", tonight.who, "Cooked by ");
     fill("note", tonight.note);
+    headsInto(heroHeads, tonight);
     fill("counter", "Night " + (index + 1) + " of " + COUNT +
                     " · " + shortDate(dateOfNight(index)));
   }
@@ -926,11 +1085,11 @@ noscript .fallback {
      Closed by default. The page's job is still to answer "what's for
      dinner" without a tap; the recipe is there for whoever is cooking. */
 
-  function recipeNode(key) {
+  function recipeNode(key, night) {
     var recipe = RECIPES[key];
     if (!recipe) { return null; }
 
-    var by   = recipe.scale || 1;
+    var by   = scaleFor(recipe, night);
     var box  = make("details", "recipe");
     var head = make("summary", null, "Recipe · " + recipe.title);
     box.appendChild(head);
@@ -945,7 +1104,13 @@ noscript .fallback {
       bits.push("Makes " + qtyText(recipe.makes.qty * by) + " " +
                 unitText(recipe.makes.unit, recipe.makes.qty * by));
     }
-    if (by !== 1) { bits.push(by + "× the original"); }
+    if (by !== 1) { bits.push(qtyText(by) + "× the original"); }
+
+    /* Say who the batch was sized for, so the number above is checkable
+       against the night rather than being taken on faith. */
+    var forWhom = headsShort(night);
+    if (forWhom) { bits.push("For " + forWhom); }
+
     if (recipe.time) { bits.push(recipe.time); }
     meta.appendChild(document.createTextNode(bits.join(" · ")));
 
@@ -1018,10 +1183,14 @@ noscript .fallback {
       if (!sides.hidden) { body.appendChild(sides); }
 
       body.appendChild(setWho(make("p"), "night-who", night.who, ""));
+
+      var heads = headsInto(make("p", "night-heads"), night);
+      if (!heads.hidden) { body.appendChild(heads); }
+
       if (night.note) { body.appendChild(make("p", "night-note", night.note)); }
 
       (night.cook || []).forEach(function (key) {
-        var recipe = recipeNode(key);
+        var recipe = recipeNode(key, night);
         if (recipe) { body.appendChild(recipe); }
       });
 
@@ -1101,7 +1270,7 @@ noscript .fallback {
       (night.cook || []).forEach(function (key) {
         var recipe = RECIPES[key];
         if (!recipe) { return; }
-        var by = recipe.scale || 1;
+        var by = scaleFor(recipe, night);
 
         recipe.ingredients.forEach(function (ing) {
           if (ing.shop === false) { return; }
@@ -1117,7 +1286,9 @@ noscript .fallback {
   }
 
   /* Nights and sides with no recipe behind them. Shown rather than
-     dropped — the gaps are the point of looking at this tab early. */
+     dropped — the gaps are the point of looking at this tab early. The
+     head count rides along: with no recipe to size it, how many you're
+     buying for is the only quantity this line can give you. */
   function looseEnds() {
     var out = [];
 
@@ -1128,10 +1299,12 @@ noscript .fallback {
       if (night.side1) { bits.push(night.side1); }
       if (night.side2) { bits.push(night.side2); }
       if (night.side3) { bits.push(night.side3); }
-      if (bits.length) { out.push({ for: DAYS[i], what: bits.join(" · ") }); }
+      if (bits.length) {
+        out.push({ for: DAYS[i], what: bits.join(" · "), heads: headsShort(night) });
+      }
     }
 
-    if (KIDS.length) { out.push({ for: "Kids", what: KIDS.join(" · ") }); }
+    if (KIDS.length) { out.push({ for: "Kids", what: KIDS.join(" · "), heads: "" }); }
     return out;
   }
 
@@ -1172,6 +1345,7 @@ noscript .fallback {
         var line = make("li");
         line.appendChild(make("span", "for", row.for + " "));
         line.appendChild(document.createTextNode(row.what));
+        if (row.heads) { line.appendChild(make("span", "loose-heads", "For " + row.heads)); }
         tailList.appendChild(line);
       });
 
@@ -1205,7 +1379,10 @@ noscript .fallback {
     var loose = looseEnds();
     if (loose.length) {
       lines.push("STILL TO WORK OUT");
-      loose.forEach(function (row) { lines.push("- " + row.for + ": " + row.what); });
+      loose.forEach(function (row) {
+        lines.push("- " + row.for + (row.heads ? " (" + row.heads + ")" : "") +
+                   ": " + row.what);
+      });
       lines.push("");
     }
 
