@@ -195,7 +195,7 @@ body {
 .sides .sep,
 .night-sides .sep {
   color: var(--lake);
-  padding: 0 .5em;
+  padding: 0 .2em;   /* the text itself already carries a space each side */
 }
 
 .who {
@@ -447,13 +447,16 @@ noscript .fallback {
   }
 
   /* "Coleslaw · Baked beans", with the dot in its own span so it can be
-     coloured separately. One side on its own is fine; none hides the line. */
+     coloured separately. The spaces around the dot are real characters, not
+     just CSS padding, so the line still reads as two things when it's spoken
+     aloud or pasted into the group text. One side on its own is fine; none
+     hides the line. */
   function sidesInto(node, night) {
     var parts = [night.side1, night.side2].filter(Boolean);
     node.textContent = "";
     if (!parts.length) { node.hidden = true; return node; }
     for (var i = 0; i < parts.length; i++) {
-      if (i) { node.appendChild(make("span", "sep", "·")); }
+      if (i) { node.appendChild(make("span", "sep", " · ")); }
       node.appendChild(document.createTextNode(parts[i]));
     }
     node.hidden = false;
