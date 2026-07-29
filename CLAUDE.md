@@ -50,9 +50,9 @@ Sides render as `side1 · side2` directly under the meal name, in both the hero 
 
 `who` is the exception to the empty-string rule: left as `""` it renders **Up for grabs** rather than disappearing, so an unclaimed night looks unclaimed.
 
-Not every night has a person cooking, so `AS_IS_COOKS` lists the cook lines that are statements about the night rather than names — currently "Up for grabs" and "Every person for themselves". Those print exactly as written, with no "Cooked by" in front, and are styled as a phrase: muted in the hero, italic in the week list. Anything not in that list is treated as a name and gets the prefix and the accent colour. Add a phrase to the list rather than teaching the renderer to guess.
+Not every night has a person cooking, so `AS_IS_COOKS` lists the cook lines that are statements about the night rather than names — currently "Up for grabs", "Every person for themselves" and "Order out". Those print exactly as written, with no "Cooked by" in front, and are styled as a phrase: muted in the hero, italic in the week list. Anything not in that list is treated as a name and gets the prefix and the accent colour. Add a phrase to the list rather than teaching the renderer to guess.
 
-Meals and sides are real, and four nights have cooks. `START` is still a guess, pending from the owner.
+Meals and sides are real, and four nights have cooks — Tuesday is a free-for-all and Friday is ordered out. `START` is still a guess, pending from the owner.
 
 ## Who's at the table
 
@@ -118,9 +118,9 @@ The one signature element is the hero: lantern-glow radial behind an oversized m
 ## Open items
 
 - Real trip dates — `START` is currently a placeholder guess
-- A cook for Friday — pizza night is still "Up for grabs"
+- Every night is now spoken for — nothing is "Up for grabs"
 - Sides are recommendations, not confirmed with whoever's cooking
 - Head counts are the plan, not an RSVP — confirm the Wednesday-onward drop from 9 adults to 7 before shopping, since the recipe amounts move with it
 - `KID_APPETITE` is a guess at how much kids eat, and only Monday's two recipes currently lean on it
-- Recipes for the other five nights, and for the sides — everything without one shows under "Still to work out" on the shopping tab
+- Recipes for the other five nights, and for the sides — everything without one shows under "Still to work out" on the shopping tab. That section keys on recipes alone, so Friday still appears there even though it's ordered out; decide whether an ordered-out night should drop off it
 - The shopping list has no quantities for anything outside a recipe; `EXTRAS` currently covers only the spaghetti and the table cheese
