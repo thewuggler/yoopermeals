@@ -52,7 +52,7 @@ Sides render as `side1 · side2` directly under the meal name, in both the hero 
 
 Not every night has a person cooking, so `AS_IS_COOKS` lists the cook lines that are statements about the night rather than names — currently "Up for grabs" and "Every person for themselves". Those print exactly as written, with no "Cooked by" in front, and are styled as a phrase: muted in the hero, italic in the week list. Anything not in that list is treated as a name and gets the prefix and the accent colour. Add a phrase to the list rather than teaching the renderer to guess.
 
-Meals and sides are real, and two nights have cooks. `START` is still a guess, pending from the owner.
+Meals and sides are real, and four nights have cooks. `START` is still a guess, pending from the owner.
 
 ## Who's at the table
 
@@ -118,7 +118,7 @@ The one signature element is the hero: lantern-glow radial behind an oversized m
 ## Open items
 
 - Real trip dates — `START` is currently a placeholder guess
-- Cooks for three of the six nights — Wednesday, Thursday and Friday are "Up for grabs"
+- A cook for Friday — pizza night is still "Up for grabs"
 - Sides are recommendations, not confirmed with whoever's cooking
 - Head counts are the plan, not an RSVP — confirm the Wednesday-onward drop from 9 adults to 7 before shopping, since the recipe amounts move with it
 - `KID_APPETITE` is a guess at how much kids eat, and only Monday's two recipes currently lean on it
