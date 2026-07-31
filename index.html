@@ -59,7 +59,7 @@ const NIGHTS = [
     adults: 7,                  kids: [13, 11, 7, 3.5],
     side1: "Corn on the cob",   side2: "Potato salad",
     note: "",
-    cook: ["grillnight", "cornonthecob", "potatosalad"] },
+    cook: ["grillnight", "hotdogs", "cornonthecob", "potatosalad"] },
 
   { meal: "Pizza",              who: "Order out",
     adults: 7,                  kids: [13, 11, 7, 3.5],
@@ -536,6 +536,25 @@ const RECIPES = {
       "Grill over direct heat, around 450°F, about 3–4 minutes a side.",
       "Lay the cheese on for the last minute and close the lid.",
       "Toast the buns cut side down while the burgers rest, and set the lettuce, tomato, onion and pickles out for people to build their own."
+    ]
+  },
+
+  hotdogs: {
+    title:  "Grilled Hot Dogs",
+    source: "House recipe",
+    time:   "15 minutes",
+    covers: "Grill Night",
+    serves: 12,                               /* alongside the burgers, not instead of them */
+    makes:  { qty: 8, unit: "hot dog" },
+    ingredients: [
+      { qty: 8,    unit: "",      item: "all-beef hot dogs",                        group: "Meat" },
+      { qty: 8,    unit: "",      item: "hot dog buns",                             group: "Bakery" }
+    ],
+    steps: [
+      "Score each dog a few times on the diagonal — it keeps them from splitting and catches the char.",
+      "Grill over medium heat, turning, 5–7 minutes, until they're browned all round and plump.",
+      "Toast the buns cut side down for the last minute.",
+      "Same table of lettuce, tomato, onion, pickles, ketchup and mustard as the burgers."
     ]
   },
 
@@ -1365,7 +1384,7 @@ noscript .fallback {
     head: "heads", sprig: "sprigs", meatball: "meatballs", quart: "quarts",
     rack: "racks", slice: "slices", rib: "ribs", ear: "ears", pint: "pints",
     bag: "bags", box: "boxes", bottle: "bottles", pan: "pans",
-    taco: "tacos", burger: "burgers"
+    taco: "tacos", burger: "burgers", "hot dog": "hot dogs"
   };
 
   function qtyText(n) {

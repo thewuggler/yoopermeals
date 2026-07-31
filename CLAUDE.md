@@ -68,7 +68,7 @@ Leave `adults` off a night and the indicator disappears and its recipes stay at 
 
 ## Recipes and the shopping list
 
-A night lists `RECIPES` keys in its `cook` array and renders those recipes; leave `cook` off and the night is just a name and its sides. Every night now has at least one — seventeen recipes across the week, one per meal and per side except the things nobody cooks (Tuesday's free-for-all, Friday's pizza and garlic knots, the tater tots).
+A night lists `RECIPES` keys in its `cook` array and renders those recipes; leave `cook` off and the night is just a name and its sides. Every night now has at least one — eighteen recipes across the week, one per meal and per side except the things nobody cooks (Tuesday's free-for-all, Friday's pizza and garlic knots, the tater tots).
 
 A recipe's `covers` names the meal or side it answers for, written **exactly** as the night writes it — `"Coleslaw"`, `"Meatballs & Pasta"`. That string, and nothing else, is what takes a line off "Still to work out". Two recipes may cover the same thing; the meatballs and the marinara both cover Monday's dinner. Matching is case-insensitive, but the words have to line up, so renaming a side means renaming its `covers` too — otherwise the side quietly reappears in the loose ends, which is the failure mode you want over a silent drop.
 
@@ -88,7 +88,7 @@ The batches the week currently lands on, which is the table to re-check whenever
 | Monday | 12½ | meatballs 2×, marinara 3×, garlicbread 2×, italiansalad 2× |
 | Tuesday | 12½ | pastasalad 1×, veggietray 1× |
 | Wednesday | 9.65 | tacos 2½×, spanishrice 1×, guacamole 2× |
-| Thursday | 9.65 | grillnight 1½×, cornonthecob 1½×, potatosalad 1× |
+| Thursday | 9.65 | grillnight 1½×, hotdogs 1×, cornonthecob 1½×, potatosalad 1× |
 | Friday | 9.65 | gardensalad 1× |
 
 Several `serves` values were picked so the night lands on a whole batch rather than an awkward one — the cornbread is `serves: 12` because a 9×13 pan is what you actually bake, not because twelve people eat it alone. Changing a head count will move these.
@@ -148,6 +148,6 @@ The one signature element is the hero: lantern-glow radial behind an oversized m
 - Head counts are the plan, not an RSVP — confirm the Wednesday-onward drop from 9 adults to 7 before shopping, since every recipe amount moves with it
 - `KID_APPETITE` is a guess at how much kids eat, and now the whole week's quantities rest on it
 - The recipes the owner didn't dictate are sensible, well-known versions of each dish rather than a specific family recipe, and several cite "Adapted from" a page that couldn't be opened from here — the quantities are sound but not transcribed. Worth a look before anyone cooks from them. The green beans, the coleslaw and the cornbread came from the owner directly and say "House recipe"
-- **Grill Night** was read as burgers; if it's brats, chicken or steak, that recipe is the one to replace
+- **Grill Night** is burgers and hot dogs, as two recipes both covering the night. The burgers were sized for the whole table before the dogs were added and haven't been trimmed since, so Thursday buys 3 lb of chuck (9 patties) *and* 8 dogs for eleven people. If that's too much meat, `grillnight`'s `serves: 6` → `serves: 8` takes it to 2 lb and 6 patties
 - Friday's pizza and garlic knots sit under "Still to work out" because they're ordered, not shopped. That reads correctly now that everything else has left the section, so the old question of whether an ordered-out night should drop off it is answered: leave it
 - Nobody has checked the list against what's already in the cabin, so staples like oil, salt and sugar are on it whether or not they need buying
