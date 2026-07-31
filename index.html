@@ -16,8 +16,8 @@ const START = [2026, 8, 2];
 
 /* Six dinners, Sunday through Friday, in order.  Keep it at six.
    Leave who as "" and the night shows as "Up for grabs".
-   side1, side2, side3 and note can each be left as "" or left off entirely
-   and they just won't show up.
+   side1 through side4 and note can each be left as "" or left off
+   entirely and they just won't show up.
    cook is an optional list of RECIPES keys — the night shows those recipes
    and the shopping list adds up what they call for.
 
@@ -33,34 +33,39 @@ const NIGHTS = [
   { meal: "Ribs",               who: "Mom",
     adults: 7,                  kids: 7,
     side1: "Coleslaw",          side2: "Green beans w/ bacon",
-    side3: "Tater tots",
-    note: "" },
+    side3: "Tater tots",        side4: "Cornbread",
+    note: "",
+    cook: ["ribs", "slaw", "greenbeans", "cornbread"] },
 
   { meal: "Meatballs & Pasta",  who: "Jeff & Shanna",
     adults: 9,                  kids: 7,
     side1: "Garlic bread",      side2: "Italian salad",
     note: "",
-    cook: ["meatballs", "marinara"] },
+    cook: ["meatballs", "marinara", "garlicbread", "italiansalad"] },
 
   { meal: "Free-for-All",       who: "Every person for themselves",
     adults: 9,                  kids: 7,
     side1: "Pasta salad",       side2: "Veggie tray & dip",
-    note: "" },
+    note: "",
+    cook: ["pastasalad", "veggietray"] },
 
   { meal: "Tacos",              who: "Joe & Ann",
     adults: 7,                  kids: [13, 11, 7, 3.5],
     side1: "Spanish rice",      side2: "Chips & guacamole",
-    note: "" },
+    note: "",
+    cook: ["tacos", "spanishrice", "guacamole"] },
 
   { meal: "Grill Night",        who: "Elaine & Andrew",
     adults: 7,                  kids: [13, 11, 7, 3.5],
     side1: "Corn on the cob",   side2: "Potato salad",
-    note: "" },
+    note: "",
+    cook: ["grillnight", "cornonthecob", "potatosalad"] },
 
   { meal: "Pizza",              who: "Order out",
     adults: 7,                  kids: [13, 11, 7, 3.5],
     side1: "Garden salad",      side2: "Garlic knots",
-    note: "" }
+    note: "",
+    cook: ["gardensalad"] }
 ];
 
 /* How much of a grown-up's dinner a kid of a given age actually eats.
@@ -114,6 +119,12 @@ const KIDS = [
    entirely.  Reach for it only when a recipe genuinely isn't about how
    many people are eating.
 
+   covers is the meal or side this recipe answers for, written exactly as
+   the night writes it — "Coleslaw", "Meatballs & Pasta".  It's what takes
+   that line off "Still to work out" at the bottom of the shopping list.
+   Two recipes can cover the same thing (the meatballs and the marinara
+   both cover Monday's dinner).
+
    Each ingredient is { qty, unit, item, prep, group }.
      qty   a number, or null for "to taste" things with no amount
      unit  "lb", "cup", "clove"…  or "" when the item carries its own
@@ -131,11 +142,122 @@ const KIDS = [
                         to look over by hand afterwards. */
 const RECIPES = {
 
+  /* ── Sunday ─────────────────────────────────────────────────────── */
+
+  ribs: {
+    title:  "Oven Baby Back Ribs",
+    source: "Adapted from Gimme Some Oven — Oven-Roasted Baby Back Ribs",
+    url:    "https://www.gimmesomeoven.com/oven-roasted-baby-back-ribs/",
+    time:   "3 hours, almost all of it in the oven",
+    covers: "Ribs",
+    serves: 6,                                /* two racks, half a rack each */
+    makes:  { qty: 2, unit: "rack" },
+    ingredients: [
+      { qty: 2,    unit: "rack",  item: "baby back ribs", prep: "membrane pulled off the back", group: "Meat" },
+      { qty: 0.25, unit: "cup",   item: "brown sugar",                              group: "Pantry" },
+      { qty: 2,    unit: "tbsp",  item: "smoked paprika",                           group: "Pantry" },
+      { qty: 1,    unit: "tbsp",  item: "kosher salt",                              group: "Pantry" },
+      { qty: 2,    unit: "tsp",   item: "garlic powder",                            group: "Pantry" },
+      { qty: 2,    unit: "tsp",   item: "onion powder",                             group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "black pepper",                             group: "Pantry" },
+      { qty: 0.5,  unit: "tsp",   item: "cayenne pepper",                           group: "Pantry" },
+      { qty: 1.5,  unit: "cup",   item: "barbecue sauce",                           group: "Pantry" }
+    ],
+    steps: [
+      "Heat the oven to 300°F. Slide a knife under the papery membrane on the bone side of each rack and pull it off — it never softens and it keeps the rub out.",
+      "Mix the brown sugar, paprika, salt, garlic powder, onion powder, pepper and cayenne. Rub it over both sides of the racks and press it in.",
+      "Wrap each rack tightly in foil, meat side up, and set them on a sheet pan. Bake 2½ hours, until a fork slides in with no fight.",
+      "Open the foil, brush the ribs with barbecue sauce, and turn the oven up to 400°F.",
+      "Bake uncovered another 15 minutes, until the sauce is sticky and starting to char at the edges.",
+      "Rest 10 minutes before cutting between the bones."
+    ]
+  },
+
+  slaw: {
+    title:  "Coleslaw",
+    source: "House recipe — from the group text",
+    time:   "20 minutes, plus an hour in the fridge",
+    covers: "Coleslaw",
+    serves: 10,
+    ingredients: [
+      { qty: 1,    unit: "head",  item: "green cabbage", prep: "shredded",          group: "Produce" },
+      { qty: 2,    unit: "",      item: "large carrots", prep: "grated",            group: "Produce" },
+      { qty: 0.25, unit: "cup",   item: "red onion", prep: "finely chopped",        group: "Produce",
+        shop: { qty: 1, unit: "", item: "small red onion" } },
+      { qty: 1,    unit: "cup",   item: "mayonnaise",                               group: "Pantry" },
+      { qty: 2,    unit: "tbsp",  item: "apple cider vinegar",                      group: "Pantry" },
+      { qty: 2,    unit: "tbsp",  item: "sugar",                                    group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "celery seed",                              group: "Pantry" },
+      { qty: null, unit: "",      item: "Salt and pepper", prep: "to taste",        group: "Pantry" }
+    ],
+    steps: [
+      "Shred the cabbage fine, grate the carrots, and chop the onion small. Toss them together in a big bowl.",
+      "Whisk the mayonnaise, vinegar, sugar, celery seed, salt and pepper until smooth.",
+      "Pour the dressing over the vegetables and toss until everything is coated.",
+      "Cover and chill at least an hour before serving — it needs the time to soften and come together. Toss again before it goes on the table."
+    ]
+  },
+
+  greenbeans: {
+    title:  "Green Beans with Bacon",
+    source: "House recipe — from the group text",
+    time:   "35 minutes",
+    covers: "Green beans w/ bacon",
+    serves: 10,
+    ingredients: [
+      { qty: 3,    unit: "lb",    item: "fresh green beans", prep: "trimmed",       group: "Produce" },
+      { qty: 9,    unit: "slice", item: "thick-cut bacon", prep: "chopped",         group: "Meat" },
+      { qty: 4,    unit: "clove", item: "garlic", prep: "minced",                   group: "Produce" },
+      { qty: 1,    unit: "cup",   item: "chicken broth",                            group: "Pantry" },
+      { qty: 2,    unit: "tbsp",  item: "apple cider vinegar",                      group: "Pantry" },
+      { qty: null, unit: "",      item: "Salt and pepper", prep: "to taste",        group: "Pantry" }
+    ],
+    steps: [
+      "Cook the bacon in a wide pot over medium heat until it's crisp. Lift it out onto paper towels and leave the fat behind.",
+      "Add the garlic to the fat and stir for 30 seconds, just until it smells like something.",
+      "Add the green beans and the broth. Bring it to a boil, then cover, drop the heat and simmer 15–20 minutes, until the beans are tender but still green.",
+      "Take the lid off and let most of the liquid cook away.",
+      "Off the heat, stir in the vinegar and the bacon. Salt and pepper to taste."
+    ]
+  },
+
+  cornbread: {
+    title:  "Gluten-Free Cornbread",
+    source: "House recipe — from the group text",
+    time:   "35 minutes",
+    covers: "Cornbread",
+    serves: 12,                               /* one 9×13 pan */
+    makes:  { qty: 1, unit: "pan" },
+    ingredients: [
+      { qty: 1.5,  unit: "cup",   item: "yellow cornmeal",                          group: "Pantry" },
+      { qty: 1.5,  unit: "cup",   item: "gluten-free 1-to-1 flour",
+        prep: "Jeff is bringing this — it's not on the list",                       group: "Pantry",
+        shop: false },
+      { qty: 0.5,  unit: "cup",   item: "sugar",                                    group: "Pantry" },
+      { qty: 1,    unit: "tbsp",  item: "baking powder",                            group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "kosher salt",                              group: "Pantry" },
+      { qty: 2,    unit: "cup",   item: "buttermilk",                               group: "Dairy" },
+      { qty: 3,    unit: "",      item: "large eggs",                               group: "Dairy" },
+      { qty: 0.75, unit: "cup",   item: "butter", prep: "melted, plus more for the pan", group: "Dairy" }
+    ],
+    steps: [
+      "Heat the oven to 375°F and butter a 9×13 pan.",
+      "Whisk the cornmeal, gluten-free flour, sugar, baking powder and salt together in a big bowl.",
+      "In another bowl whisk the buttermilk, eggs and melted butter.",
+      "Pour the wet into the dry and stir just until there's no dry flour left — a few lumps are fine, and beating it makes it tough.",
+      "Scrape it into the pan and bake 25–30 minutes, until the top is golden and a toothpick comes out clean.",
+      "Let it sit 10 minutes before cutting."
+    ]
+  },
+
+  /* ── Monday ─────────────────────────────────────────────────────── */
+
   meatballs: {
     title:  "Rao's Meatballs",
     source: "Rao's Cookbook — Frank Pellegrino",
     url:    "https://www.foodnetwork.com/recipes/raos-meatballs-5287055",
     time:   "About 1 hour",
+    covers: "Meatballs & Pasta",
     serves: 7,                                /* 14 meatballs, two apiece */
     makes:  { qty: 14, unit: "meatball" },
     ingredients: [
@@ -167,6 +289,7 @@ const RECIPES = {
     source: "Rao's Cookbook — Frank Pellegrino",
     url:    "https://www.food.com/recipe/raos-marinara-sauce-393184",
     time:   "About 1½ hours, mostly unattended",
+    covers: "Meatballs & Pasta",
     serves: 4,                                /* a quart sauces four, pasta and all */
     makes:  { qty: 1, unit: "quart" },
     ingredients: [
@@ -188,16 +311,342 @@ const RECIPES = {
       "Add the tomatoes with their juice and salt. Bring it up to a boil, then drop it straight down to a bare simmer and leave it about an hour, until it thickens slightly.",
       "Stir in the basil, oregano and pepper, and cook one more minute."
     ]
+  },
+
+  garlicbread: {
+    title:  "Garlic Bread",
+    source: "Adapted from Spend With Pennies — Homemade Garlic Bread",
+    url:    "https://www.spendwithpennies.com/homemade-garlic-bread/",
+    time:   "20 minutes",
+    covers: "Garlic bread",
+    serves: 6,                                /* one loaf, split and cut into six */
+    makes:  { qty: 1, unit: "loaf" },
+    ingredients: [
+      { qty: 1,    unit: "loaf",  item: "French bread",                             group: "Bakery" },
+      { qty: 0.5,  unit: "cup",   item: "butter", prep: "softened",                 group: "Dairy" },
+      { qty: 4,    unit: "clove", item: "garlic", prep: "minced",                   group: "Produce" },
+      { qty: 0.25, unit: "cup",   item: "Parmesan", prep: "grated",                 group: "Dairy" },
+      { qty: 1,    unit: "tbsp",  item: "flat-leaf parsley", prep: "chopped",       group: "Produce",
+        shop: { qty: 1, unit: "bunch", item: "flat-leaf parsley" } },
+      { qty: 0.5,  unit: "tsp",   item: "garlic powder",                            group: "Pantry" }
+    ],
+    steps: [
+      "Heat the oven to 400°F.",
+      "Mash the softened butter together with the garlic, Parmesan, parsley and garlic powder.",
+      "Split the loaf lengthwise and lay both halves cut side up on a sheet pan.",
+      "Spread the butter right to the edges — the edges are the part everyone fights over.",
+      "Bake 12–15 minutes, until the butter is bubbling. Broil a minute if you want the top crisp, but stand there and watch it.",
+      "Cut into fingers and serve hot."
+    ]
+  },
+
+  italiansalad: {
+    title:  "Italian Chopped Salad",
+    source: "House recipe",
+    time:   "15 minutes",
+    covers: "Italian salad",
+    serves: 6,
+    ingredients: [
+      { qty: 2,    unit: "head",  item: "romaine lettuce", prep: "chopped",         group: "Produce" },
+      { qty: 1,    unit: "pint",  item: "cherry tomatoes", prep: "halved",          group: "Produce" },
+      { qty: 1,    unit: "",      item: "English cucumber", prep: "sliced",         group: "Produce" },
+      { qty: 0.5,  unit: "",      item: "small red onion", prep: "thinly sliced",   group: "Produce" },
+      { qty: 0.5,  unit: "cup",   item: "sliced black olives",                      group: "Pantry",
+        shop: { qty: 1, unit: "can", item: "(6 oz) sliced black olives" } },
+      { qty: 0.5,  unit: "cup",   item: "pepperoncini", prep: "drained",            group: "Pantry",
+        shop: { qty: 1, unit: "jar", item: "pepperoncini" } },
+      { qty: 0.5,  unit: "cup",   item: "Parmesan", prep: "shaved",                 group: "Dairy" },
+      { qty: 0.5,  unit: "cup",   item: "Italian dressing",                         group: "Pantry",
+        shop: { qty: 1, unit: "bottle", item: "Italian dressing" } }
+    ],
+    steps: [
+      "Chop the romaine and pile it in a big bowl.",
+      "Add the tomatoes, cucumber, red onion, olives and pepperoncini.",
+      "Dress it and toss just before it goes to the table — dressed early it goes limp.",
+      "Shave the Parmesan over the top."
+    ]
+  },
+
+  /* ── Tuesday ────────────────────────────────────────────────────── */
+
+  pastasalad: {
+    title:  "Italian Pasta Salad",
+    source: "Adapted from A Fork's Tale — Italian Pasta Salad",
+    url:    "https://www.aforkstale.com/italian-pasta-salad/",
+    time:   "30 minutes, plus chilling",
+    covers: "Pasta salad",
+    serves: 12,
+    ingredients: [
+      { qty: 1,    unit: "lb",    item: "tri-color rotini",                         group: "Pantry" },
+      { qty: 1,    unit: "pint",  item: "cherry tomatoes", prep: "halved",          group: "Produce" },
+      { qty: 8,    unit: "oz",    item: "mozzarella pearls",                        group: "Dairy" },
+      { qty: 6,    unit: "oz",    item: "sliced pepperoni",                         group: "Meat" },
+      { qty: 1,    unit: "",      item: "green bell pepper", prep: "diced",         group: "Produce" },
+      { qty: 1,    unit: "",      item: "small red onion", prep: "thinly sliced",   group: "Produce" },
+      { qty: 0.5,  unit: "cup",   item: "Parmesan", prep: "grated",                 group: "Dairy" },
+      { qty: 1,    unit: "cup",   item: "Italian dressing",                         group: "Pantry",
+        shop: { qty: 1, unit: "bottle", item: "Italian dressing" } }
+    ],
+    steps: [
+      "Boil the rotini in well-salted water until just tender, then drain and rinse it cold so it stops cooking.",
+      "Tip it into a big bowl with the tomatoes, mozzarella, pepperoni, bell pepper and onion.",
+      "Pour over the dressing and toss. Stir in the Parmesan.",
+      "Chill at least an hour. Pasta drinks the dressing as it sits, so taste it before serving and add a splash more if it looks dry."
+    ]
+  },
+
+  veggietray: {
+    title:  "Veggie Tray & Ranch",
+    source: "House recipe",
+    time:   "20 minutes",
+    covers: "Veggie tray & dip",
+    serves: 12,
+    ingredients: [
+      { qty: 2,    unit: "lb",    item: "baby carrots",                             group: "Produce" },
+      { qty: 1,    unit: "bunch", item: "celery", prep: "cut into sticks",          group: "Produce" },
+      { qty: 2,    unit: "",      item: "English cucumber", prep: "sliced",         group: "Produce" },
+      { qty: 3,    unit: "",      item: "bell peppers", prep: "cut into strips",    group: "Produce" },
+      { qty: 1,    unit: "pint",  item: "cherry tomatoes",                          group: "Produce" },
+      { qty: 1,    unit: "lb",    item: "broccoli florets",                         group: "Produce" },
+      { qty: 2,    unit: "cup",   item: "ranch dressing",                           group: "Pantry",
+        shop: { qty: 1, unit: "bottle", item: "ranch dressing" } }
+    ],
+    steps: [
+      "Cut everything into pieces a kid can hold, and keep the shapes different so the tray doesn't read as one thing.",
+      "Arrange it around a bowl of ranch in the middle.",
+      "Cover and refrigerate until people start wandering into the kitchen."
+    ]
+  },
+
+  /* ── Wednesday ──────────────────────────────────────────────────── */
+
+  tacos: {
+    title:  "Ground Beef Tacos",
+    source: "Adapted from Inspired Taste — Easy Ground Beef Tacos",
+    url:    "https://www.inspiredtaste.net/99108/ground-beef-tacos-recipe/",
+    time:   "30 minutes",
+    covers: "Tacos",
+    serves: 4,
+    makes:  { qty: 12, unit: "taco" },
+    ingredients: [
+      { qty: 1,    unit: "lb",    item: "ground beef (80/20)",                      group: "Meat" },
+      { qty: 1,    unit: "tbsp",  item: "chili powder",                             group: "Pantry" },
+      { qty: 1.5,  unit: "tsp",   item: "ground cumin",                             group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "smoked paprika",                           group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "garlic powder",                            group: "Pantry" },
+      { qty: 0.5,  unit: "tsp",   item: "dried oregano",                            group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "kosher salt",                              group: "Pantry" },
+      { qty: 0.5,  unit: "cup",   item: "water",                                    shop: false },
+      { qty: 12,   unit: "",      item: "hard taco shells",                         group: "Pantry" },
+      { qty: 1,    unit: "cup",   item: "cheddar", prep: "shredded",                group: "Dairy" },
+      { qty: 1,    unit: "cup",   item: "sour cream",                               group: "Dairy" },
+      { qty: 0.5,  unit: "head",  item: "iceberg lettuce", prep: "shredded",        group: "Produce" },
+      { qty: 2,    unit: "",      item: "roma tomatoes", prep: "diced",             group: "Produce" }
+    ],
+    steps: [
+      "Brown the beef in a wide skillet over medium-high, breaking it up as it goes. Drain off the fat.",
+      "Stir in the chili powder, cumin, paprika, garlic powder, oregano and salt and cook a minute, until it smells toasted.",
+      "Add the water and simmer 5 minutes, until it's saucy rather than wet.",
+      "Warm the shells in the oven while the meat finishes.",
+      "Put the cheese, sour cream, lettuce and tomato in bowls and let everyone build their own."
+    ]
+  },
+
+  spanishrice: {
+    title:  "Spanish Rice",
+    source: "Adapted from Lil' Luna — Restaurant-Style Spanish Rice",
+    url:    "https://lilluna.com/food-tutorial-spanish-rice/",
+    time:   "35 minutes",
+    covers: "Spanish rice",
+    serves: 8,
+    ingredients: [
+      { qty: 2,    unit: "cup",   item: "long-grain white rice",                    group: "Pantry" },
+      { qty: 3,    unit: "tbsp",  item: "vegetable oil",                            group: "Pantry" },
+      { qty: 0.5,  unit: "",      item: "large yellow onion", prep: "finely chopped", group: "Produce" },
+      { qty: 2,    unit: "clove", item: "garlic", prep: "minced",                   group: "Produce" },
+      { qty: 1,    unit: "can",   item: "(8 oz) tomato sauce",                      group: "Pantry" },
+      { qty: 3,    unit: "cup",   item: "chicken broth",                            group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "ground cumin",                             group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "kosher salt",                              group: "Pantry" }
+    ],
+    steps: [
+      "Heat the oil in a wide pan over medium and stir in the rice. Cook, stirring, until the grains turn golden and smell nutty — this is the whole difference between this and plain rice.",
+      "Add the onion and cook 3 minutes, then the garlic for 30 seconds.",
+      "Pour in the tomato sauce, broth, cumin and salt and bring it to a simmer.",
+      "Cover, drop the heat to low and leave it alone for 20 minutes. No stirring, no lifting the lid.",
+      "Off the heat, let it sit 5 minutes covered, then fluff with a fork."
+    ]
+  },
+
+  guacamole: {
+    title:  "Guacamole",
+    source: "Adapted from America's Test Kitchen — Classic Guacamole",
+    url:    "https://www.americastestkitchen.com/recipes/9627-classic-guacamole",
+    time:   "15 minutes",
+    covers: "Chips & guacamole",
+    serves: 5,
+    ingredients: [
+      { qty: 3,    unit: "",      item: "ripe avocados",                            group: "Produce" },
+      { qty: 0.25, unit: "cup",   item: "white onion", prep: "finely chopped",      group: "Produce",
+        shop: { qty: 1, unit: "", item: "small white onion" } },
+      { qty: 1,    unit: "",      item: "serrano chile", prep: "seeded and minced", group: "Produce" },
+      { qty: 0.25, unit: "cup",   item: "cilantro", prep: "chopped",                group: "Produce",
+        shop: { qty: 1, unit: "bunch", item: "cilantro" } },
+      { qty: 2,    unit: "tbsp",  item: "lime juice",                               group: "Produce",
+        shop: { qty: 3, unit: "", item: "limes" } },
+      { qty: 0.5,  unit: "tsp",   item: "kosher salt",                              group: "Pantry" },
+      { qty: 1,    unit: "bag",   item: "tortilla chips",                           group: "Pantry" }
+    ],
+    steps: [
+      "Cut one avocado into small cubes and set it aside — that's the texture.",
+      "Mash the other two with the onion, chile, cilantro, lime juice and salt until it's mostly smooth.",
+      "Fold the cubed avocado back in.",
+      "Taste for salt and lime. Press plastic wrap right onto the surface if it's waiting, or it browns."
+    ]
+  },
+
+  /* ── Thursday ───────────────────────────────────────────────────── */
+
+  grillnight: {
+    title:  "Grilled Burgers",
+    source: "Adapted from A Spicy Perspective — Best Hamburger Patty",
+    url:    "https://www.aspicyperspective.com/best-hamburger-patty-recipe/",
+    time:   "30 minutes",
+    covers: "Grill Night",
+    serves: 6,
+    makes:  { qty: 6, unit: "burger" },
+    ingredients: [
+      { qty: 2,    unit: "lb",    item: "ground chuck (80/20)",                     group: "Meat" },
+      { qty: 1.5,  unit: "tsp",   item: "kosher salt",                              group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "black pepper",                             group: "Pantry" },
+      { qty: 6,    unit: "",      item: "hamburger buns",                           group: "Bakery" },
+      { qty: 6,    unit: "slice", item: "cheddar",                                  group: "Dairy" },
+      { qty: 1,    unit: "head",  item: "green leaf lettuce",                       group: "Produce" },
+      { qty: 2,    unit: "",      item: "large tomatoes", prep: "sliced",           group: "Produce" },
+      { qty: 1,    unit: "",      item: "red onion", prep: "sliced thin",           group: "Produce" },
+      { qty: 1,    unit: "jar",   item: "dill pickle chips",                        group: "Pantry",
+        shop: { qty: 1, unit: "jar", item: "dill pickle chips" } }
+    ],
+    steps: [
+      "Divide the beef into ⅓-pound portions and shape them loosely — packed tight, they come off the grill like hockey pucks.",
+      "Press a dent into the middle of each patty with your thumb so they cook flat instead of doming.",
+      "Salt and pepper both sides right before they go on. Salting early draws water out.",
+      "Grill over direct heat, around 450°F, about 3–4 minutes a side.",
+      "Lay the cheese on for the last minute and close the lid.",
+      "Toast the buns cut side down while the burgers rest, and set the lettuce, tomato, onion and pickles out for people to build their own."
+    ]
+  },
+
+  cornonthecob: {
+    title:  "Corn on the Cob",
+    source: "House recipe",
+    time:   "20 minutes",
+    covers: "Corn on the cob",
+    serves: 6,
+    ingredients: [
+      { qty: 6,    unit: "ear",   item: "sweet corn", prep: "husked",               group: "Produce" },
+      { qty: 0.5,  unit: "cup",   item: "butter",                                   group: "Dairy" },
+      { qty: null, unit: "",      item: "Salt and pepper", prep: "to taste",        group: "Pantry" }
+    ],
+    steps: [
+      "Bring a big pot of water to a boil. Don't salt it — salt toughens the kernels.",
+      "Drop the corn in and boil 5–7 minutes, until the kernels are bright and give a little.",
+      "Or put it straight on the grill, turning, 10 minutes for a bit of char.",
+      "Serve with butter and salt on the side."
+    ]
+  },
+
+  potatosalad: {
+    title:  "Classic Potato Salad",
+    source: "Adapted from The Kitchn — Best Classic Potato Salad",
+    url:    "https://www.thekitchn.com/how-to-make-potato-salad-cooking-lessons-from-the-kitchn-203664",
+    time:   "45 minutes, plus an hour in the fridge",
+    covers: "Potato salad",
+    serves: 8,
+    ingredients: [
+      { qty: 3,    unit: "lb",    item: "Yukon gold potatoes", prep: "cut into 1-inch pieces", group: "Produce" },
+      { qty: 5,    unit: "",      item: "large eggs", prep: "hard-boiled and chopped", group: "Dairy" },
+      { qty: 1.5,  unit: "cup",   item: "mayonnaise",                               group: "Pantry" },
+      { qty: 2,    unit: "rib",   item: "celery", prep: "diced",                    group: "Produce",
+        shop: { qty: 1, unit: "bunch", item: "celery" } },
+      { qty: 0.25, unit: "cup",   item: "red onion", prep: "finely chopped",        group: "Produce",
+        shop: { qty: 1, unit: "", item: "small red onion" } },
+      { qty: 2,    unit: "tbsp",  item: "apple cider vinegar",                      group: "Pantry" },
+      { qty: 1,    unit: "tbsp",  item: "yellow mustard",                           group: "Pantry",
+        shop: { qty: 1, unit: "bottle", item: "yellow mustard" } },
+      { qty: 1,    unit: "tbsp",  item: "sugar",                                    group: "Pantry" },
+      { qty: 1,    unit: "tsp",   item: "celery seed",                              group: "Pantry" },
+      { qty: null, unit: "",      item: "Salt and pepper", prep: "to taste",        group: "Pantry" }
+    ],
+    steps: [
+      "Cover the potatoes with cold salted water, bring to a simmer and cook 10–12 minutes, until a knife goes in easily.",
+      "Drain them and, while they're still hot, sprinkle over the vinegar — hot potatoes absorb it and that's where the flavour comes from.",
+      "Whisk the mayonnaise, mustard, sugar, celery seed, salt and pepper together.",
+      "When the potatoes have cooled, fold in the dressing, the eggs, the celery and the onion.",
+      "Chill at least an hour. Taste again cold — it always wants more salt than you think."
+    ]
+  },
+
+  /* ── Friday ─────────────────────────────────────────────────────── */
+
+  gardensalad: {
+    title:  "Garden Salad",
+    source: "House recipe",
+    time:   "10 minutes",
+    covers: "Garden salad",
+    serves: 8,
+    ingredients: [
+      { qty: 2,    unit: "head",  item: "green leaf lettuce", prep: "torn",         group: "Produce" },
+      { qty: 1,    unit: "pint",  item: "cherry tomatoes", prep: "halved",          group: "Produce" },
+      { qty: 1,    unit: "",      item: "English cucumber", prep: "sliced",         group: "Produce" },
+      { qty: 2,    unit: "",      item: "large carrots", prep: "shredded",          group: "Produce" },
+      { qty: 1,    unit: "cup",   item: "croutons",                                 group: "Bakery" },
+      { qty: 1,    unit: "cup",   item: "ranch dressing",                           group: "Pantry",
+        shop: { qty: 1, unit: "bottle", item: "ranch dressing" } }
+    ],
+    steps: [
+      "Tear the lettuce into a big bowl.",
+      "Add the tomatoes, cucumber and carrot.",
+      "Croutons and dressing at the table, not in the bowl — the pizza always takes longer than they say."
+    ]
   }
 
 };
 
 /* On the shopping list but not part of any recipe — the pasta, the cheese
    for the table, anything else you already know you have to buy.
-   Same shape as an ingredient, and these are never scaled. */
+   Same shape as an ingredient, and these are never scaled.
+   covers works the same as it does on a recipe: it takes that meal or
+   side off "Still to work out", for the things you buy rather than cook. */
 const EXTRAS = [
-  { qty: 3, unit: "lb", item: "spaghetti",                    group: "Pantry" },
-  { qty: 8, unit: "oz", item: "Pecorino Romano for the table", group: "Dairy" }
+  { qty: 3, unit: "lb",  item: "spaghetti",                      group: "Pantry" },
+  { qty: 8, unit: "oz",  item: "Pecorino Romano for the table",  group: "Dairy" },
+  { qty: 3, unit: "bag", item: "(32 oz) frozen tater tots",      group: "Frozen",
+    covers: "Tater tots" },
+
+  /* The table, whatever's being eaten */
+  { qty: 1, unit: "bottle", item: "ketchup",                     group: "Pantry" },
+  { qty: 2, unit: "jar",    item: "salsa",                       group: "Pantry" },
+
+  /* The kids' standbys — enough to have them around all week */
+  { qty: 2,  unit: "bag",  item: "(5 lb) frozen chicken nuggets", group: "Frozen",
+    covers: "Chicken Nuggets" },
+  { qty: 4,  unit: "box",  item: "macaroni & cheese",             group: "Pantry",
+    covers: "Mac and Cheese" },
+  { qty: 1,  unit: "jar",  item: "peanut butter",                 group: "Pantry",
+    covers: "PB&J" },
+  { qty: 1,  unit: "jar",  item: "grape jelly",                   group: "Pantry" },
+  { qty: 2,  unit: "loaf", item: "sandwich bread",                group: "Bakery" },
+  { qty: 1,  unit: "lb",   item: "sliced salami",                 group: "Meat",
+    covers: "Salami" },
+  { qty: 12, unit: "",     item: "yogurt cups",                   group: "Dairy",
+    covers: "Yogurt" },
+  { qty: 24, unit: "",     item: "cheese sticks",                 group: "Dairy",
+    covers: "Cheese Sticks" },
+  { qty: 3,  unit: "bag",  item: "potato chips",                  group: "Pantry",
+    covers: "Chips" },
+  { qty: null, unit: "",   item: "Fruit — apples, grapes, bananas, berries", group: "Produce",
+    covers: "Fruit" }
 ];
 
 /* ══════════════════════════════════════════════════════════════════
@@ -881,7 +1330,7 @@ noscript .fallback {
   }
 
   function sidesInto(node, night) {
-    return dottedInto(node, [night.side1, night.side2, night.side3].filter(Boolean));
+    return dottedInto(node, [night.side1, night.side2, night.side3, night.side4].filter(Boolean));
   }
 
   /* A night with no cook yet reads as "Up for grabs" rather than going
@@ -911,7 +1360,10 @@ noscript .fallback {
   var PLURALS = {
     cup: "cups", clove: "cloves", can: "cans", leaf: "leaves",
     bunch: "bunches", pinch: "pinches", jar: "jars", loaf: "loaves",
-    head: "heads", sprig: "sprigs", meatball: "meatballs", quart: "quarts"
+    head: "heads", sprig: "sprigs", meatball: "meatballs", quart: "quarts",
+    rack: "racks", slice: "slices", rib: "ribs", ear: "ears", pint: "pints",
+    bag: "bags", box: "boxes", bottle: "bottles", pan: "pans",
+    taco: "tacos", burger: "burgers"
   };
 
   function qtyText(n) {
@@ -1288,26 +1740,47 @@ noscript .fallback {
     return rows;
   }
 
-  /* Nights and sides with no recipe behind them. Shown rather than
-     dropped — the gaps are the point of looking at this tab early. The
-     head count rides along: with no recipe to size it, how many you're
-     buying for is the only quantity this line can give you. */
+  /* What a recipe or an extra says it answers for, keyed loosely enough
+     that a stray capital doesn't quietly reopen a night that's settled. */
+  function coveredBy(sources) {
+    var covers = {};
+    sources.forEach(function (thing) {
+      if (thing && thing.covers) { covers[thing.covers.toLowerCase()] = true; }
+    });
+    return function (name) {
+      return covers.hasOwnProperty(String(name).toLowerCase());
+    };
+  }
+
+  /* An extra covers its line all week — the tots are bought once, not
+     per night — so this set is worked out one time and shared. */
+  var boughtOutright = coveredBy(EXTRAS);
+
+  /* Nights and sides with nothing behind them, recipe or extra. Shown
+     rather than dropped — the gaps are the point of looking at this tab
+     early. The head count rides along: with nothing to size it, how many
+     you're buying for is the only quantity this line can give you. */
   function looseEnds() {
     var out = [];
 
     for (var i = 0; i < COUNT; i++) {
-      var night = NIGHTS[i];
-      var bits  = [];
-      if (!(night.cook || []).length) { bits.push(night.meal); }
-      if (night.side1) { bits.push(night.side1); }
-      if (night.side2) { bits.push(night.side2); }
-      if (night.side3) { bits.push(night.side3); }
+      var night   = NIGHTS[i];
+      var cooked  = coveredBy((night.cook || []).map(function (key) { return RECIPES[key]; }));
+      var bits    = [];
+
+      [night.meal, night.side1, night.side2, night.side3, night.side4]
+        .filter(Boolean)
+        .forEach(function (name) {
+          if (!cooked(name) && !boughtOutright(name)) { bits.push(name); }
+        });
+
       if (bits.length) {
         out.push({ for: DAYS[i], what: bits.join(" · "), heads: headsShort(night) });
       }
     }
 
-    if (KIDS.length) { out.push({ for: "Kids", what: KIDS.join(" · "), heads: "" }); }
+    var kids = KIDS.filter(function (name) { return !boughtOutright(name); });
+    if (kids.length) { out.push({ for: "Kids", what: kids.join(" · "), heads: "" }); }
     return out;
   }
 
