@@ -52,7 +52,7 @@ Sides render as `side1 · side2 · …` directly under the meal name, in both th
 
 Not every night has a person cooking, so `AS_IS_COOKS` lists the cook lines that are statements about the night rather than names — currently "Up for grabs", "Every person for themselves" and "Order out". Those print exactly as written, with no "Cooked by" in front, and are styled as a phrase: muted in the hero, italic in the week list. Anything not in that list is treated as a name and gets the prefix and the accent colour. Add a phrase to the list rather than teaching the renderer to guess.
 
-Meals and sides are real, and four nights have cooks — Tuesday is a free-for-all and Friday is ordered out. `START` is still a guess, pending from the owner.
+Meals and sides are real, and four nights have cooks — Tuesday is a free-for-all and Friday is ordered out. `START` is the real trip date, confirmed by the owner: Sunday August 2nd 2026 through Friday the 7th.
 
 Sunday carries four sides, which is the most any night has: coleslaw, green beans with bacon, tater tots and cornbread.
 
@@ -88,7 +88,7 @@ The batches the week currently lands on, which is the table to re-check whenever
 | Monday | 12½ | meatballs 2×, marinara 3×, garlicbread 2×, italiansalad 2× |
 | Tuesday | 12½ | pastasalad 1×, veggietray 1× |
 | Wednesday | 9.65 | tacos 2½×, spanishrice 1×, guacamole 2× |
-| Thursday | 9.65 | grillnight 1×, hotdogs 1×, cornonthecob 1½×, potatosalad 1× |
+| Thursday | 9.65 | grillnight 1½×, hotdogs 1×, cornonthecob 1½×, potatosalad 1× |
 | Friday | 9.65 | gardensalad 1× |
 
 Several `serves` values were picked so the night lands on a whole batch rather than an awkward one — the cornbread is `serves: 12` because a 9×13 pan is what you actually bake, not because twelve people eat it alone. Changing a head count will move these.
@@ -142,12 +142,11 @@ The one signature element is the hero: lantern-glow radial behind an oversized m
 
 ## Open items
 
-- Real trip dates — `START` is currently a placeholder guess
 - Every night is now spoken for — nothing is "Up for grabs"
 - Sides are recommendations, not confirmed with whoever's cooking
-- Head counts are the plan, not an RSVP — confirm the Wednesday-onward drop from 9 adults to 7 before shopping, since every recipe amount moves with it
+- Head counts are confirmed, including the Wednesday-onward drop from 9 adults to 7. Every recipe amount on the page moves with those numbers, so a late change to who's coming is a re-check of the whole shopping list
 - `KID_APPETITE` is a guess at how much kids eat, and now the whole week's quantities rest on it
 - The recipes the owner didn't dictate are sensible, well-known versions of each dish rather than a specific family recipe, and several cite "Adapted from" a page that couldn't be opened from here — the quantities are sound but not transcribed. Worth a look before anyone cooks from them. The green beans, the coleslaw and the cornbread came from the owner directly and say "House recipe"
-- **Grill Night** is burgers and hot dogs, as two recipes both covering the night: 6 patties and 8 dogs. The burgers carry `serves: 8` for 6 patties rather than the 6 you'd expect, because the dogs take part of the table — that's the one `serves` on the page that isn't a straight read of how many the recipe feeds on its own. If hot dogs ever come off Thursday, put it back to 6
+- **Grill Night** is burgers and hot dogs, as two recipes both covering the night: 9 patties and 8 dogs for a table of eleven. That's deliberately generous — the owner asked for the burgers back at full size after they were briefly trimmed. Both recipes read straight, `serves` meaning what it means everywhere else on the page
 - Friday's pizza and garlic knots sit under "Still to work out" because they're ordered, not shopped. That reads correctly now that everything else has left the section, so the old question of whether an ordered-out night should drop off it is answered: leave it
 - Nobody has checked the list against what's already in the cabin, so staples like oil, salt and sugar are on it whether or not they need buying
